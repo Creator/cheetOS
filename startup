@@ -1,0 +1,13 @@
+local useTLCO = true
+
+if fs.exists("notlco") then
+	useTLCO = false
+end
+
+if useTLCO then
+	dofile("kernel/tlc.lua")
+else
+	shell.exit()
+	shell = nil
+	dofile("kernel/start.lua")
+end
