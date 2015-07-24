@@ -68,7 +68,7 @@ local function Combine(path1, path2)
 	end
 end
 
-Normalise = function(path)
+local function Normalise(path)
 	if path == nil then error("path can't be nil", 2) end
 	local drive, fullPath = GetDriveAndPath(path)
 
