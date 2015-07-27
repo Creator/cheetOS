@@ -176,8 +176,18 @@ function Tasks.GetTaskByTID(tid)
 end
 
 function Tasks.KeepAlive(evtData)
-	for _,v in pairs(taskList) do
+	local toRemove = {}
+	
+	for i,v in pairs(taskList) do
 		v:KeepAlive(evtData)
+		
+		if v:GetState() == Tasks.TaskState.Dead then
+			toRemove[#toRemove + 1] = i
+		end
+	end
+	
+	for _,v in pairs(toRemove) do
+		taskList[v] = nil
 	end
 end
 

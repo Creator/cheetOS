@@ -172,6 +172,8 @@ local ok, err = pcall(function()
 
 	System.ShellMgr.SetShell(shell)
 	
+	shell.run("U:/start.ss")
+	
 	local sh = System.Tasks.NewTask("S:/shell.lua")
 	sh:Start()
 end)

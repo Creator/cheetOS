@@ -17,7 +17,7 @@ local function runShell()
 	term.clear()
 	term.setCursorPos(1, 1)
 	
-	print("Basic Shell for cheetOS " .. System.Version)
+	print("Basic Shell for cheetOS " .. System.Version .. " (TID " .. __TID__ .. ")")
 	
 	local history = {}
 	
