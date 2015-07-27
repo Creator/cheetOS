@@ -23,7 +23,7 @@ local function runShell()
 	
 	while true do
 		setColours(colours.cyan, colours.black)
-		write("> ")
+		write(shell.dir() .. "> ")
 		
 		setColours(colours.white, colours.black)
 		local input = read(nil, history)

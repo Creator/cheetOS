@@ -1,6 +1,20 @@
 local ok, err = pcall(function()
-	local cdir = "/"
-	local path = ".:/system/default:/user/global:/rom/programs:/rom/programs/rednet:/rom/programs/fun:/rom/programs/fun/advanced:/rom/programs/http:/rom/programs/advanced:/rom/programs/pocket:/rom/programs/command"
+	local cdir = "U:/"
+
+	local path = {
+		".";
+		"S:/default";
+		"U:/global";
+		"R:/programs";
+		"R:/programs/rednet";
+		"R:/programs/fun";
+		"R:/programs/fun/advanced";
+		"R:/programs/http";
+		"R:/programs/advanced";
+		"R:/programs/pocket";
+		"R:/programs/command";
+	}
+	
 	local aliases = {}
 	
 	local associations = {
@@ -65,15 +79,28 @@ local ok, err = pcall(function()
 	end
 	
 	shell.path = function()
-		return path
+		error("shell.path(): not available in basic shell!", 2)
 	end
 	
 	shell.setPath = function(newPath)
-		path = newPath
+		error("shell.path(): not available in basic shell!", 2)
 	end
 	
 	shell.__addToPath = function(dir)
-		path = path .. ":" .. fs.__normalise(dir)
+		path[#path + 1] = dir
+	end
+	
+	shell.__removeFromPath = function(dir)
+		local index = 0
+		
+		for i,v in pairs(path) do
+			if System.Path.Normalise(v) == System.Path.Normalise(dir) then
+				index = i
+				break
+			end
+		end
+		
+		table.remove(path, index)
 	end
 	
 	shell.setAlias = function(alias, prog)
@@ -110,17 +137,17 @@ local ok, err = pcall(function()
 			name = aliases[name]
 		end
 		
-		for entry in path:gmatch("[^:]+") do
+		for _,entry in pairs(path) do
 			if fs.exists(entry) and fs.isDir(entry) then
 				for _, file in pairs(fs.list(entry)) do
 					if fs.getName(name) == fs.getName(file) then
-						return fs.__normalise(System.Path.Combine(entry, file))
+						return System.Path.Normalise(System.Path.Combine(entry, file))
 					end
 				end
 			end
 		end
 		
-		return fs.__normalise(shell.resolve(name))
+		return System.Path.Normalise(shell.resolve(name))
 	end
 	
 	shell.getRunningProgram = function()
@@ -144,8 +171,8 @@ local ok, err = pcall(function()
 	end
 
 	System.ShellMgr.SetShell(shell)
-
-	local sh = System.Tasks.NewTask("system/shell.lua")
+	
+	local sh = System.Tasks.NewTask("S:/shell.lua")
 	sh:Start()
 end)
 

@@ -1,0 +1,25 @@
+local w,h = term.getSize()
+
+local columns = {
+	"TID", "Name"
+}
+
+local function makeProcTable()
+	local tbl = {}
+
+	table.insert(tbl, columns)
+
+	for _,v in pairs(System.Tasks.List()) do
+		local entry = {}
+
+		for i,c in pairs(columns) do
+			entry[i] = tostring(v[columns[i]])
+		end
+
+		table.insert(tbl, entry)
+	end
+	
+	return tbl
+end
+
+textutils.pagedTabulate(unpack(makeProcTable()))

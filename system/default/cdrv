@@ -1,0 +1,9 @@
+local newDrive = ...
+local drive = System.Path.GetDriveAndPath(newDrive or "") or newDrive
+
+if not System.File.IsDrive(drive) then
+	printError(tostring(newDrive) .. " is not a valid drive!")
+	return
+end
+
+shell.setDir(drive .. ":/")

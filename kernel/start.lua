@@ -14,6 +14,7 @@ local components = {
 	{ "Sandbox", "kernel/sandbox.lua" };
 	{ "ShellMgr", "kernel/shellmgr.lua" };
 	{ "Tasks", "kernel/tasks.lua"};
+	{ "File", "kernel/filesys.lua" };
 }
 
 local function loadComponents(loadCallback)
@@ -45,7 +46,7 @@ loadComponents(function(k, v)
 	print(" -> " .. k .. " (" .. v .. ")...")
 end)
 
-local sysinit = System.Tasks.NewTask("system/sysinit.lua")
+local sysinit = System.Tasks.NewTask("S:/sysinit.lua")
 sysinit:Start()
 
 while true do
