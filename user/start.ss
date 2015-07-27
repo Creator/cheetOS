@@ -14,4 +14,3 @@ alias clr clear
 alias cls clear
 
 alias rs redstone
-

@@ -78,7 +78,25 @@ function DirMount:Resolve(path)
 end
 
 function DirMount:list(path)
-	return _fs.list(self:Resolve(path))
+	if System.Path.Normalise(path) == "S:/default" then
+		local files =  _fs.list(self:Resolve(path))
+		local idxToRemove = -1
+		for i,v in pairs(files) do
+			if v == "taft" then
+				-- necessary for locking the buffer
+				idxToRemove = i
+				break
+			end
+		end
+		
+		if idxToRemove ~= -1 then
+			table.remove(files, idxToRemove)
+		end
+		
+		return files
+	else
+		return _fs.list(self:Resolve(path))
+	end
 end
 
 function DirMount:exists(path)

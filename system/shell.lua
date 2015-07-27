@@ -27,6 +27,7 @@ local function runShell()
 		
 		setColours(colours.white, colours.black)
 		local input = read(nil, history)
+		
 		processInput(input)
 		history[#history + 1] = input
 	end
