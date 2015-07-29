@@ -75,7 +75,7 @@ local function Normalise(path)
 	end
 
 	if drive ~= nil then
-		fullPath = drive .. ":" .. fullPath
+		fullPath = drive .. ":" .. (fullPath or "/")
 	end
 
 	return fullPath

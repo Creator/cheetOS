@@ -1,5 +1,7 @@
 local _fs = {}
 
+local mounts = {}
+
 local function GetFSAPI()
 	return setmetatable({}, { __index = fs })
 end
@@ -16,6 +18,19 @@ do
 			_fs[k] = v
 		end
 	end
+end
+
+local function RealToVirtual(path)
+	path = System.Path.Normalise(path)
+	
+	for _,v in pairs(mounts) do
+		local real = v.__realPath
+		if path:sub(1, #real) == real then
+			return System.Path.Normalise(v.__letter .. ":" .. path:sub(#real + 1, #path))
+		end
+	end
+	
+	return nil
 end
 
 local FS_ARG_PATH = 1
@@ -37,7 +52,7 @@ local fsFunctions = {
 	delete			= { FS_ARG_PATH };
 	combine			= { FS_ARG_PATH, FS_ARG_PATH };
 	open			= { FS_ARG_PATH, FS_ARG_OTHER };
-	find			= { FS_ARG_WILDCARD };
+	find			= { FS_ARG_PATH };
 	getDir			= { FS_ARG_PATH };
 	complete		= { FS_ARG_OTHER, FS_ARG_PATH, FS_ARG_OTHER, FS_ARG_OTHER };
 }
@@ -67,7 +82,7 @@ setmetatable(DirMount, {
 	__call = function(cls, realPath)
 		local self = setmetatable({}, DirMount)
 		assert(type(realPath == "string"), "DirMount(): arg #1 must be a string")
-		self.__realPath = realPath
+		self.__realPath = System.Path.Normalise(realPath)
 		return self
 	end
 })
@@ -155,19 +170,25 @@ function DirMount:getDir(path)
 	return _fs.getDir(self:Resolve(path))
 end
 
-local mounts = {
-	U = DirMount("/user");
-	R = DirMount("/rom");
-	S = DirMount("/system");
-}
+function DirMount:find(wildcard)
+	local results = _fs.find(self:Resolve(wildcard))
+
+	for k,v in pairs(results) do
+		local virtual = RealToVirtual(v)
+		results[k] = virtual
+	end
+	
+	return results
+end
 
 local function RegisterMount(letter, mount)
 	assert(type(letter == "string"), "RegisterMount(): arg #1 must be a string")
 	letter = letter:sub(1, 1)
 	
 	assert(type(letter == "table"), "RegisterMount(): arg #2 must be a mount")
+	
+	mount.__letter = letter
 	mounts[letter] = mount
-	mounts[letter].__letter = letter
 end
 
 local function Unmount(letter)
@@ -191,6 +212,10 @@ local function GetMounts()
 end
 
 do
+	RegisterMount("U", DirMount("/user"))
+	RegisterMount("R", DirMount("/rom"))
+	RegisterMount("S", DirMount("/system"))
+
 	for k,v in pairs(fsFunctions) do
 		_G.fs[k] = function(...)
 			local args = { ... }
@@ -208,6 +233,7 @@ do
 			end
 			
 			local newArgs = {}
+			local hasPath = false
 			
 			for i,t in pairs(v) do
 				if t == FS_ARG_PATH then
@@ -216,6 +242,7 @@ do
 						local drive, path = System.Path.GetDriveAndPath(primaryPath)
 						drive = drive or System.Path.GetDefaultDrive()
 						mount = GetMountFromDrive(drive)
+						hasPath = true
 					end
 					
 					pathCount = pathCount + 1
@@ -224,15 +251,17 @@ do
 				newArgs[#newArgs + 1] = GetArg(i)
 			end
 			
-			if mount ~= nil then
-				local func = mount[k]
-				if func == nil then
-					error(k .. "(): function unsupported on this drive", 2)
+			if hasPath then
+				if mount ~= nil then
+					local func = mount[k]
+					if func == nil then
+						error(k .. "(): function unsupported on this drive", 2)
+					else
+						return func(mount, unpack(newArgs))
+					end
 				else
-					return func(mount, unpack(newArgs))
+					error("couldn't find a drive to call this on", 2)
 				end
-			else
-				error("couldn't find a drive to call this on", 2)
 			end
 		end
 	end
@@ -241,6 +270,8 @@ end
 return {
 	Mount = Mount,
 	DirMount = DirMount,
+	
+	RealToVirtual = RealToVirtual,
 	
 	GetMountFromDrive = GetMountFromDrive,
 	RegisterMount = RegisterMount,
