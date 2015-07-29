@@ -1,3 +1,5 @@
+local fscombine = fs.combine
+
 local function GetDriveAndPath(path)
 	if path == "" then return nil, "/" end
 	if path == "/" or path == "\\" then return nil, "/" end
@@ -50,24 +52,6 @@ local function GetRootElementWithDrive(path)
 	return drive .. name
 end
 
-local function Combine(path1, path2)
-	local d1, p1 = GetDriveAndPath(path1)
-	local d2, p2 = GetDriveAndPath(path2)
-
-	local combined = fs.__normalise(fs.combine(p1, p2))
-	if d1 ~= nil and d2 ~= nil then
-		if d1 ~= d2 then
-			error("paths have differing drives!", 2)
-		end
-
-		return d1 .. ":" .. combined
-	elseif (d1 ~= nil and d2 == nil) or (d1 == nil and d2 ~= nil) then
-		return (d1 or d2) .. ":" .. combined
-	elseif d1 == nil and d2 == nil then
-		return combined
-	end
-end
-
 local function Normalise(path)
 	if path == nil then error("path can't be nil", 2) end
 	local drive, fullPath = GetDriveAndPath(path)
@@ -91,17 +75,29 @@ local function Normalise(path)
 	end
 
 	if drive ~= nil then
-		fullPath = drive .. ":" .. fullPath
+		fullPath = drive .. ":" .. (fullPath or "/")
 	end
 
 	return fullPath
 end
 
-fs.__normalise = function(path)
-	return Normalise(path)
-end
+local function Combine(path1, path2)
+	local d1, p1 = GetDriveAndPath(path1)
+	local d2, p2 = GetDriveAndPath(path2)
 
-fs.__normalize = fs.__normalise
+	local combined = Normalise(fscombine(p1, p2))
+	if d1 ~= nil and d2 ~= nil then
+		if d1 ~= d2 then
+			error("paths have differing drives!", 2)
+		end
+
+		return d1 .. ":" .. combined
+	elseif (d1 ~= nil and d2 == nil) or (d1 == nil and d2 ~= nil) then
+		return (d1 or d2) .. ":" .. combined
+	elseif d1 == nil and d2 == nil then
+		return combined
+	end
+end
 
 return {
 	GetDrive = GetDrive,

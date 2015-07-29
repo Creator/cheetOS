@@ -65,6 +65,8 @@ setmetatable(Task, {
 		self.__reqEvents = nil
 		self.__file = file
 		self.__sandbox = nil
+		
+		self.Name = fs.getName(self.__file)
 
 		return self
 	end
@@ -98,15 +100,17 @@ function Task:Start(...)
 	local env = {
 		__TASK__ 	= self;
 		__TID__ 	= self.TID;
-		__FILE__	= fs.__normalise(self.__file);
+		__FILE__	= System.Path.Normalise(self.__file);
 
 		shell 		= System.ShellMgr.GetShell();
+		fs 			= System.File.GetFSAPI();
 	}
 
 	self.__sandbox = System.Sandbox.NewSandbox(self.__file, env)
 	self.__func = self.__sandbox:GetFunction()
 	self.__coro = coroutine.create(self.__func)
 	self.__state = Tasks.TaskState.Alive
+	
 	local yieldData = { coroutine.resume(self.__coro, ...) }
 	self:__processYield(yieldData)
 end
@@ -149,6 +153,10 @@ function Task:GetState()
 	return self.__state
 end
 
+function Task:GetFile()
+	return self.__file
+end
+
 function Task:SendSignal(signal)
 	signalHandlers[signal](self)
 end
@@ -168,9 +176,23 @@ function Tasks.GetTaskByTID(tid)
 end
 
 function Tasks.KeepAlive(evtData)
-	for _,v in pairs(taskList) do
+	local toRemove = {}
+	
+	for i,v in pairs(taskList) do
 		v:KeepAlive(evtData)
+		
+		if v:GetState() == Tasks.TaskState.Dead then
+			toRemove[#toRemove + 1] = i
+		end
 	end
+	
+	for _,v in pairs(toRemove) do
+		taskList[v] = nil
+	end
+end
+
+function Tasks.List()
+	return taskList
 end
 
 function Tasks.WaitForTask(task)

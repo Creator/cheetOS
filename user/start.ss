@@ -1,8 +1,16 @@
-alias percolate alias
+alias ls list
+alias dir list
 
-percolate ls list
-percolate dir list
-percolate fucking sudo
+alias fucking sudo
 
-percolate rm delete
-percolate del delete
+alias rm delete
+alias del delete
+
+alias cp copy
+alias mv move
+alias mov move
+
+alias clr clear
+alias cls clear
+
+alias rs redstone

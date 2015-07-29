@@ -17,16 +17,17 @@ local function runShell()
 	term.clear()
 	term.setCursorPos(1, 1)
 	
-	print("Basic Shell for cheetOS " .. System.Version)
+	print("Basic Shell for cheetOS " .. System.Version .. " (TID " .. __TID__ .. ")")
 	
 	local history = {}
 	
 	while true do
 		setColours(colours.cyan, colours.black)
-		write("> ")
+		write(shell.dir() .. "> ")
 		
 		setColours(colours.white, colours.black)
 		local input = read(nil, history)
+		
 		processInput(input)
 		history[#history + 1] = input
 	end
