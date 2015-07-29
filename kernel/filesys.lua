@@ -1,4 +1,4 @@
-local _fs = {}
+_fs = {}
 
 local mounts = {}
 
@@ -181,6 +181,10 @@ function DirMount:find(wildcard)
 	return results
 end
 
+function DirMount:complete(file, parent, inclFiles, inclSlashes)
+	return _fs.complete(file, parent, inclFiles, inclSlashes)
+end
+
 local function RegisterMount(letter, mount)
 	assert(type(letter == "string"), "RegisterMount(): arg #1 must be a string")
 	letter = letter:sub(1, 1)
@@ -233,7 +237,6 @@ do
 			end
 			
 			local newArgs = {}
-			local hasPath = false
 			
 			for i,t in pairs(v) do
 				if t == FS_ARG_PATH then
@@ -242,7 +245,6 @@ do
 						local drive, path = System.Path.GetDriveAndPath(primaryPath)
 						drive = drive or System.Path.GetDefaultDrive()
 						mount = GetMountFromDrive(drive)
-						hasPath = true
 					end
 					
 					pathCount = pathCount + 1
@@ -250,18 +252,16 @@ do
 				
 				newArgs[#newArgs + 1] = GetArg(i)
 			end
-			
-			if hasPath then
-				if mount ~= nil then
-					local func = mount[k]
-					if func == nil then
-						error(k .. "(): function unsupported on this drive", 2)
-					else
-						return func(mount, unpack(newArgs))
-					end
+
+			if mount ~= nil then
+				local func = mount[k]
+				if func == nil then
+					error(k .. "(): function unsupported on this drive", 2)
 				else
-					error("couldn't find a drive to call this on", 2)
+					return func(mount, unpack(newArgs))
 				end
+			else
+				error("couldn't find a drive to call this on", 2)
 			end
 		end
 	end
