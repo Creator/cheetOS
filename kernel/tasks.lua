@@ -1,3 +1,5 @@
+local __replacements = {}
+
 os.pullEventRaw = function(...)
 	return coroutine.yield(...)
 end
@@ -55,9 +57,11 @@ local Task = {}
 Task.__index = Task
 
 setmetatable(Task, {
-	__call = function(cls, file)
+	__call = function(cls, file, allowYield)
 		local self = setmetatable({}, Task)
 		self.TID = 0
+		
+		if allowYield == nil then allowYield = true end
 
 		self.__coro = nil
 		self.__lastError = ""
@@ -65,6 +69,11 @@ setmetatable(Task, {
 		self.__reqEvents = nil
 		self.__file = file
 		self.__sandbox = nil
+		self.__allowYield = allowYield
+		self.__libs = {}
+		
+		self.__libTbl = {}
+		setmetatable(self.__libTbl, { __index = _G })
 		
 		self.Name = fs.getName(self.__file)
 
@@ -89,28 +98,71 @@ function Task:__processYield(yieldData)
 		self.__reqEvents = requestedEvents
 	end
 
+	self:__handleDeath()
+end
+
+function Task:__handleDeath()
 	if self.__coro == nil or coroutine.status(self.__coro) == "dead" then
 		self.__state = Tasks.TaskState.Dead
+		self.__coro = nil
 		os.queueEvent("task_dead", self.TID)
 		return
 	end
 end
 
-function Task:Start(...)
-	local env = {
-		__TASK__ 	= self;
-		__TID__ 	= self.TID;
-		__FILE__	= System.Path.Normalise(self.__file);
-
-		shell 		= System.ShellMgr.GetShell();
-		fs 			= System.File.GetFSAPI();
+function Task:AddLibrary(lib, name, file)
+	self.__libs[name] = {
+		File = file,
+		Lib = lib
 	}
+	
+	self.__libTbl[name] = lib
+end
 
+function Task:GetLibrary(name)
+	return self.__libs[name]
+end
+
+function Task:Start(...)
+	local env = {}
+	
+	env.__TASK__ 	= self
+	env.__TID__ 	= self.TID
+	env.__FILE__	= System.Path.Normalise(self.__file)
+
+	env.shell 		= System.ShellMgr.GetShell()
+	env.fs 			= System.File.GetFSAPI()
+	
+	for k,v in pairs(__replacements) do
+		local target = nil
+		if k == "" then
+			target = env
+		else
+			if env[k] == nil then
+				env[k] = {}
+			end
+			
+			target = env[k]
+		end
+		
+		for fn,f in pairs(v) do
+			target[fn] = function(...)
+				f(self, ...)
+			end
+		end
+	end
+
+	setmetatable(env, { __index = self.__libTbl })
+	
 	self.__sandbox = System.Sandbox.NewSandbox(self.__file, env)
 	self.__func = self.__sandbox:GetFunction()
 	self.__coro = coroutine.create(self.__func)
 	self.__state = Tasks.TaskState.Alive
-	
+
+	if not self.__allowYield then
+		self:__handleDeath()
+	end
+
 	local yieldData = { coroutine.resume(self.__coro, ...) }
 	self:__processYield(yieldData)
 end
@@ -134,14 +186,16 @@ function Task:HasRequested(event)
 end
 
 function Task:KeepAlive(evtData)
-	if self.__state == Tasks.TaskState.Alive then
-		local evtName = evtData[1]
-		if not self:HasRequested(evtName) then
-			return
-		end
+	if self.__allowYield then
+		if self.__state == Tasks.TaskState.Alive then
+			local evtName = evtData[1]
+			if not self:HasRequested(evtName) then
+				return
+			end
 
-		local yieldData = { coroutine.resume( self.__coro, unpack(evtData) ) }
-		self:__processYield(yieldData)
+			local yieldData = { coroutine.resume( self.__coro, unpack(evtData) ) }
+			self:__processYield(yieldData)
+		end
 	end
 end
 
@@ -205,6 +259,14 @@ function Tasks.WaitForTask(task)
 	while task:GetState() ~= System.Tasks.TaskState.Dead do
 		os.pullEvent("task_dead")
 	end
+end
+
+function Tasks.__replaceNative(api, name, handler)
+	if not __replacements[api] then
+		__replacements[api] = {}
+	end
+	
+	__replacements[api][name] = handler
 end
 
 return Tasks

@@ -1,4 +1,4 @@
-_fs = {}
+local _fs = {}
 
 local mounts = {}
 
