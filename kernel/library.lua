@@ -31,7 +31,8 @@ end
 
 System.Tasks.__replaceNative("os", "loadAPI", function(task, file, ...)
 	local ok, err = pcall(Library.LoadIntoTask, file, task, ...)
-	return ok, err
+	printError(err)
+	return ok
 end)
 
 return Library

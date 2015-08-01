@@ -140,6 +140,7 @@ function Task:Start(...)
 		else
 			if env[k] == nil then
 				env[k] = {}
+				setmetatable(env[k], { __index = _G[k] })
 			end
 			
 			target = env[k]
