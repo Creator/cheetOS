@@ -7,10 +7,7 @@ setmetatable(Sandbox, {
 	__call = function(self, file, _env)
 		local self = setmetatable({}, Sandbox)
 		
-		local env = setmetatable({}, { __index = _ENV or getfenv() })
-		for k,v in pairs(_env) do
-			env[k] = v
-		end
+		local env = setmetatable({}, { __index = _env })
 		
 		if load then
 			-- Lua 5.2 (CC1.74+)
