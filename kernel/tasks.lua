@@ -147,7 +147,7 @@ function Task:Start(...)
 		
 		for fn,f in pairs(v) do
 			target[fn] = function(...)
-				f(self, ...)
+				return f(self, ...)
 			end
 		end
 	end
