@@ -7,7 +7,7 @@ local required = {
 	"path", "setPath";
 	"resolve", "resolveProgram";
 	"aliases", "setAlias", "clearAlias";
-	"programs", "getRunningProgram", "run";
+	"programs", "run";
 }
 
 local function isRequired(func)
@@ -63,5 +63,9 @@ end
 function ShellMgr.GetShell()
 	return currentShell
 end
+
+System.Tasks.__replaceNative("shell", "getRunningProgram", function(task)
+	return task.Name
+end)
 
 return ShellMgr

@@ -150,13 +150,13 @@ local ok, err = pcall(function()
 		return System.Path.Normalise(shell.resolve(name))
 	end
 	
-	shell.getRunningProgram = function()
+	--[[shell.getRunningProgram = function()
 		if getfenv then
 			return getfenv(2).__FILE__ or "N/A"
 		else
 			error("shell.getRunningProgram not available in Lua 5.2!", 2)
 		end
-	end
+	end]]
 	
 	shell.__associate = function(ext, program)
 		associations[ext] = program

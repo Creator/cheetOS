@@ -129,6 +129,7 @@ function Task:Start(...)
 	env.__TASK__ 	= self
 	env.__TID__ 	= self.TID
 	env.__FILE__	= System.Path.Normalise(self.__file)
+	env.__NAME__	= self.Name
 
 	env.shell 		= System.ShellMgr.GetShell()
 	env.fs 			= System.File.GetFSAPI()

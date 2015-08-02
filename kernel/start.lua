@@ -14,8 +14,8 @@ System = {
 local components = {
 	{ "Path", "kernel/path.lua" };
 	{ "Sandbox", "kernel/sandbox.lua" };
-	{ "ShellMgr", "kernel/shellmgr.lua" };
 	{ "Tasks", "kernel/tasks.lua"};
+	{ "ShellMgr", "kernel/shellmgr.lua" };
 	{ "Library", "kernel/library.lua" };
 	
 	--[[ 
