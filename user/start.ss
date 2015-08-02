@@ -8,6 +8,7 @@ alias del delete
 
 alias cp copy
 alias mv move
+alias taft S:/default/taft
 alias mov move
 
 alias clr clear
