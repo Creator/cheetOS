@@ -51,6 +51,10 @@ local ok, err = pcall(function()
 			args[#args + 1] = v
 		end
 
+		if args[1] == nil then
+			return false
+		end
+		
 		file = shell.resolveProgram(args[1])
 	
 		if not fs.exists(file) then

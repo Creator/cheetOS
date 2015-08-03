@@ -9,7 +9,7 @@ local function setColours(fg, bg)
 end
 
 local function processInput(input)
-	shell.run(input)
+	return shell.run(input)
 end
 
 local function runShell()
@@ -28,7 +28,7 @@ local function runShell()
 			
 			setColours(colours.white, colours.black)
 			local input = read(nil, history)
-			
+
 			processInput(input)
 			history[#history + 1] = input 
 		end)

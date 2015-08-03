@@ -230,7 +230,7 @@ do
 				local arg = args[i]
 				
 				if expected ~= nil then
-					assert(type(arg) == expected, k .. "(): arg #" .. i .. " must be a " .. expected)
+					assert(type(arg) == expected, k .. "(): arg #" .. i .. " must be a " .. expected .. ", got " .. type(arg))
 				end
 				
 				return arg
