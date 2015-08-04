@@ -1,0 +1,22 @@
+local drive, dir = ...
+
+local function printUsage()
+	printError("Usage: " .. shell.getRunningProgram() .. " <drive> <directory>")
+end
+
+do
+	if drive == nil or dir == nil then
+		printUsage()
+		return
+	end
+	
+	drive = System.Path.GetDriveAndPath(drive) or drive
+	
+	if System.File.IsDrive(drive) then
+		printError("The drive " .. drive .. " already exists")
+		return
+	end
+	
+	print("Mounting " .. dir .. " as " .. drive .. ":/")
+	System.File.RegisterMount(drive, System.File.DirMount(dir))
+end

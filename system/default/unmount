@@ -1,0 +1,22 @@
+local drive = ...
+
+local function printUsage()
+	printError("Usage: " .. shell.getRunningProgram() .. " <drive>")
+end
+
+do
+	if drive == nil then
+		printUsage()
+		return
+	end
+	
+	drive = System.Path.GetDriveAndPath(drive) or drive
+	
+	if not System.File.IsDrive(drive) then
+		printError("No such drive '" .. drive .. "'")
+		return
+	end
+	
+	print("Unmounting " .. drive .. ":/")
+	System.File.Unmount(drive)
+end
