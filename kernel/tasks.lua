@@ -60,7 +60,7 @@ setmetatable(Task, {
 	__call = function(cls, file, allowYield)
 		local self = setmetatable({}, Task)
 		self.TID = 0
-		
+
 		if allowYield == nil then allowYield = true end
 
 		self.__coro = nil
@@ -71,10 +71,10 @@ setmetatable(Task, {
 		self.__sandbox = nil
 		self.__allowYield = allowYield
 		self.__libs = {}
-		
+
 		self.__libTbl = {}
 		setmetatable(self.__libTbl, { __index = _G })
-		
+
 		self.Name = fs.getName(self.__file)
 
 		return self
@@ -115,7 +115,7 @@ function Task:AddLibrary(lib, name, file)
 		File = file,
 		Lib = lib
 	}
-	
+
 	self.__libTbl[name] = lib
 end
 
@@ -125,7 +125,7 @@ end
 
 function Task:Start(...)
 	local env = {}
-	
+
 	env.__TASK__ 	= self
 	env.__TID__ 	= self.TID
 	env.__FILE__	= System.Path.Normalise(self.__file)
@@ -133,7 +133,7 @@ function Task:Start(...)
 
 	env.shell 		= System.ShellMgr.GetShell()
 	env.fs 			= System.File.GetFSAPI()
-	
+
 	for k,v in pairs(__replacements) do
 		local target = nil
 		if k == "" then
@@ -143,10 +143,10 @@ function Task:Start(...)
 				env[k] = {}
 				setmetatable(env[k], { __index = _G[k] })
 			end
-			
+
 			target = env[k]
 		end
-		
+
 		for fn,f in pairs(v) do
 			target[fn] = function(...)
 				return f(self, ...)
@@ -155,7 +155,7 @@ function Task:Start(...)
 	end
 
 	setmetatable(env, { __index = self.__libTbl })
-	
+
 	self.__sandbox = System.Sandbox.NewSandbox(self.__file, env)
 	self.__func = self.__sandbox:GetFunction()
 	self.__coro = coroutine.create(self.__func)
@@ -218,12 +218,17 @@ function Task:SendSignal(signal)
 end
 
 local taskList = {}
+local newTaskQueue = {}
+
+local nextTaskID = 0
 
 function Tasks.NewTask(...)
 	local task = Task(...)
-	local index = #taskList + 1
+	nextTaskID = nextTaskID + 1
+
+	local index = nextTaskID
 	task.TID = index
-	taskList[index] = task
+	newTaskQueue[index] = task
 	return task, index
 end
 
@@ -233,15 +238,21 @@ end
 
 function Tasks.KeepAlive(evtData)
 	local toRemove = {}
-	
+
+	for k,v in pairs(newTaskQueue) do
+		taskList[k] = v
+	end
+
+	newTaskQueue = {}
+
 	for i,v in pairs(taskList) do
 		v:KeepAlive(evtData)
-		
+
 		if v:GetState() == Tasks.TaskState.Dead then
 			toRemove[#toRemove + 1] = i
 		end
 	end
-	
+
 	for _,v in pairs(toRemove) do
 		taskList[v] = nil
 	end
@@ -267,7 +278,7 @@ function Tasks.__replaceNative(api, name, handler)
 	if not __replacements[api] then
 		__replacements[api] = {}
 	end
-	
+
 	__replacements[api][name] = handler
 end
 
