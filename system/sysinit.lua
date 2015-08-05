@@ -142,7 +142,7 @@ local ok, err = pcall(function()
 
 		local firstChar = file:sub(1, 1)
 		if firstChar == "/" or firstChar == "\\" then -- root!
-			return System.Path.Combine("", file)
+			return System.Path.Combine(cdrive .. ":/", file)
 		else
 			return System.Path.Combine(_cdir, file)
 		end
