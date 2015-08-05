@@ -1,0 +1,3 @@
+local args = { ... }
+local cmdLine = table.concat(args, " ")
+print(cmdLine)

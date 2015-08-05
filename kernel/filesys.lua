@@ -222,9 +222,10 @@ local function GetMounts()
 end
 
 do
-	RegisterMount("U", DirMount("/user"))
+	--RegisterMount("U", DirMount("/user"))
 	RegisterMount("R", DirMount("/rom"))
 	RegisterMount("S", DirMount("/system"))
+	RegisterMount("K", DirMount("/kernel"))
 
 	for k,v in pairs(fsFunctions) do
 		_G.fs[k] = function(...)

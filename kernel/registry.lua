@@ -1,21 +1,21 @@
 local Registry = {}
 
+local REGISTRY_FILE = "S:/registry.dat"
+local REGENTRY_KEY = 0xFF
+local REGENTRY_DIR = 0xFE
+
 local __registry = {
-  Test = {
-    Key1 = "Eyy! #1",
-    Key2 = "Eyy! #2",
-    Key3 = {
-      K = "k",
-      Ey = "ey"
+  FileSystem = {
+    Mounts = {
+      U = "/user"
     }
+  },
+
+  Shell = {
+    StartupFile = "U:/start.ss",
+    StartWorkingDir = "U:/"
   }
 }
-
---[[
-  Key format:
-
-  Test/Key3/K
-]]
 
 local function explodeKey(key)
   local elements = {}
@@ -28,14 +28,18 @@ end
 function Registry.Set(key, value)
   local elems = explodeKey(key)
 
+  if #elems == 0 then
+    error("can't set the root dir", 2)
+  end
+
   local dir = nil
   local last = __registry
 
   local _key = nil
 
-  for _,v in pairs(elems) do
+  for i,v in ipairs(elems) do
     dir = last[v]
-    if type(dir) ~= "table" then
+    if i == #elems then
       _key = v
       break
     end
@@ -58,10 +62,32 @@ function Registry.Get(key)
 
   for _,v in pairs(elems) do
     dir = last[v]
+    if dir == nil then
+      error(v .. ": invalid path element", 2)
+    end
+
     last = dir
   end
 
   return dir
 end
+
+function Registry.Save()
+  local file = fs.open(REGISTRY_FILE, "w")
+  file.write(textutils.serialiseJSON(__registry))
+  file.close()
+end
+
+function Registry.Load()
+  local file = fs.open(REGISTRY_FILE, "r")
+  if file then
+    __registry = textutils.unserialiseJSON(file.readAll())
+    file.close()
+  else
+    Registry.Save()
+  end
+end
+
+Registry.Load()
 
 return Registry

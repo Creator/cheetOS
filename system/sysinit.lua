@@ -1,5 +1,5 @@
 local ok, err = pcall(function()
-	local cdir = "U:/"
+	local cdir = "S:/"
 
 	local path = {
 		".";
@@ -190,8 +190,6 @@ local ok, err = pcall(function()
 
 	local sh = System.Tasks.NewTask("S:/shell.lua")
 	sh:Start()
-
-	shell.run("U:/start.ss")
 end)
 
 if not ok then
