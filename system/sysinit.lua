@@ -23,11 +23,6 @@ local ok, err = pcall(function()
 
 	local shell = {} 	-- Shell API
 
-	shell.exit = function(force)
-		__TASK__:SendSignal(force 	and 	System.Tasks.Signal.Kill
-									or		System.Tasks.Signal.Terminate)
-	end
-
 	shell.dir = function()
 		return cdir
 	end
@@ -186,9 +181,16 @@ local ok, err = pcall(function()
 		return associations[ext]
 	end
 
+	shell.exit = function()
+		local shtid = System.ShellMgr.GetShellTID()
+		local task = System.Tasks.GetTaskByTID(shtid)
+		task:SendSignal(System.Tasks.Signal.Kill)
+	end
+
 	System.ShellMgr.SetShell(shell)
 
 	local sh = System.Tasks.NewTask("S:/shell.lua")
+	System.ShellMgr.SetShellTID(sh.TID)
 	sh:Start()
 end)
 
