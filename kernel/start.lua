@@ -12,14 +12,15 @@ System = {
 }
 
 local components = {
+	{ "Registry", "kernel/registry.lua" };
 	{ "Path", "kernel/path.lua" };
 	{ "Sandbox", "kernel/sandbox.lua" };
 	{ "Tasks", "kernel/tasks.lua"};
 	{ "ShellMgr", "kernel/shellmgr.lua" };
 	{ "Library", "kernel/library.lua" };
-	
-	--[[ 
-		File must be loaded last because 
+
+	--[[
+		File must be loaded last because
 		kernel files are no longer accessible
 		after it is loaded!
 	]]
@@ -29,17 +30,17 @@ local components = {
 local function loadComponents(loadCallback)
 	for _,v in pairs(components) do
 		local chunk, msg = _loadfile(v[2], _ENV or getfenv())
-		
+
 		loadCallback(v[1], v[2])
-		
+
 		if chunk == nil then
 			printError("Syntax error: " .. msg)
 		end
-	
+
 		local ok, err = pcall(function()
 			System[v[1]] = chunk()
 		end)
-		
+
 		if not ok then
 			printError("Failed! Error: " .. err, 0)
 		end
@@ -63,22 +64,22 @@ end
 
 do
 	log = fs.open("system/boot_log.txt", "w")
-	
+
 	print("Running cheetOS v" .. System.Version)
 	print("Loading components...")
 	loadComponents(function(k, v)
 		print(" -> " .. k .. " (" .. v .. ")...")
 	end)
-	
+
 	if System.Tasks.__replaceNative then
 		System.Tasks.__replaceNative = nil
 	end
 
 	log.close()
 	log = nil
-	
+
 	print = oldPrint
-	
+
 	local sysinit = System.Tasks.NewTask("S:/sysinit.lua")
 	sysinit:Start()
 
