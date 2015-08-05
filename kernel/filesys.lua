@@ -114,14 +114,18 @@ function DirMount:list(path)
 	end
 end
 
+function DirMount:IsInDrive(path)
+	local resolved = self:Resolve(path)
+	local normalised = System.Path.Normalise(resolved)
+	return normalised:sub(1, #self.__realPath) == self.__realPath
+end
+
 function DirMount:exists(path)
 	return _fs.exists(self:Resolve(path))
 end
 
 function DirMount:isDir(path)
-	local resolved = self:Resolve(path)
-	local normalised = System.Path.Normalise(resolved)
-	return normalised:sub(1, #self.__realPath) == self.__realPath and _fs.isDir(resolved)
+	return _fs.isDir(self:Resolve(path))
 end
 
 function DirMount:isReadOnly(path)
@@ -218,9 +222,10 @@ local function GetMounts()
 end
 
 do
-	RegisterMount("U", DirMount("/user"))
+	--RegisterMount("U", DirMount("/user"))
 	RegisterMount("R", DirMount("/rom"))
 	RegisterMount("S", DirMount("/system"))
+	RegisterMount("K", DirMount("/kernel"))
 
 	for k,v in pairs(fsFunctions) do
 		_G.fs[k] = function(...)
@@ -247,6 +252,10 @@ do
 						local drive, path = System.Path.GetDriveAndPath(primaryPath)
 						drive = drive or System.Path.GetDefaultDrive()
 						mount = GetMountFromDrive(drive)
+
+						if mount and not mount:IsInDrive(System.Path.Combine(drive .. ":/", path)) then
+							error("invalid path", 2)
+						end
 					end
 
 					pathCount = pathCount + 1

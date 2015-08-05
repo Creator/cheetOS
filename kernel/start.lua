@@ -1,7 +1,7 @@
 term.clear()
 term.setCursorPos(1, 1)
 
-local _loadfile = _G.loadfile
+local _fs = _G.fs
 
 if unpack == nil then
 	unpack = table.unpack
@@ -13,35 +13,33 @@ System = {
 
 local components = {
 	{ "Path", "kernel/path.lua" };
-	{ "Sandbox", "kernel/sandbox.lua" };
-	{ "Tasks", "kernel/tasks.lua"};
-	{ "ShellMgr", "kernel/shellmgr.lua" };
-	{ "Library", "kernel/library.lua" };
-	
-	--[[ 
-		File must be loaded last because 
-		kernel files are no longer accessible
-		after it is loaded!
-	]]
 	{ "File", "kernel/filesys.lua" };
+
+	{ "Tasks", "K:/tasks.lua"};
+	{ "Library", "K:/library.lua" };
+	{ "JSON", "K:/json.lua" };
+	{ "Registry", "K:/registry.lua" };
+	{ "Mounts", "K:/mounts.lua" };
+	{ "Sandbox", "K:/sandbox.lua" };
+	{ "ShellMgr", "K:/shellmgr.lua" };
 }
 
 local function loadComponents(loadCallback)
 	for _,v in pairs(components) do
-		local chunk, msg = _loadfile(v[2], _ENV or getfenv())
-		
+		local chunk, msg = loadfile(v[2], env)
+
 		loadCallback(v[1], v[2])
-		
+
 		if chunk == nil then
 			printError("Syntax error: " .. msg)
 		end
-	
+
 		local ok, err = pcall(function()
 			System[v[1]] = chunk()
 		end)
-		
+
 		if not ok then
-			printError("Failed! Error: " .. err, 0)
+			printError("Failed! Error: " .. err)
 		end
 	end
 end
@@ -62,23 +60,25 @@ print = function(...)
 end
 
 do
-	log = fs.open("system/boot_log.txt", "w")
-	
+	log = _fs.open("system/boot_log.txt", "w")
+
 	print("Running cheetOS v" .. System.Version)
 	print("Loading components...")
 	loadComponents(function(k, v)
 		print(" -> " .. k .. " (" .. v .. ")...")
 	end)
-	
+
 	if System.Tasks.__replaceNative then
 		System.Tasks.__replaceNative = nil
 	end
 
+	System.File.Unmount("K")
+
 	log.close()
 	log = nil
-	
+
 	print = oldPrint
-	
+
 	local sysinit = System.Tasks.NewTask("S:/sysinit.lua")
 	sysinit:Start()
 
