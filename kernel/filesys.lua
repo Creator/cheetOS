@@ -22,14 +22,14 @@ end
 
 local function RealToVirtual(path)
 	path = System.Path.Normalise(path)
-	
+
 	for _,v in pairs(mounts) do
 		local real = v.__realPath
 		if path:sub(1, #real) == real then
 			return System.Path.Normalise(v.__letter .. ":" .. path:sub(#real + 1, #path))
 		end
 	end
-	
+
 	return nil
 end
 
@@ -103,11 +103,11 @@ function DirMount:list(path)
 				break
 			end
 		end
-		
+
 		if idxToRemove ~= -1 then
 			table.remove(files, idxToRemove)
 		end
-		
+
 		return files
 	else
 		return _fs.list(self:Resolve(path))
@@ -119,7 +119,14 @@ function DirMount:exists(path)
 end
 
 function DirMount:isDir(path)
-	return _fs.isDir(self:Resolve(path))
+	local resolved = self:Resolve(path)
+	local normalised = System.Path.Normalise(resolved)
+
+	if normalised:sub(1, #self.__realPath) ~= self.__realPath then
+		return false
+	end
+
+	return _fs.isDir(resolved)
 end
 
 function DirMount:isReadOnly(path)
@@ -177,7 +184,7 @@ function DirMount:find(wildcard)
 		local virtual = RealToVirtual(v)
 		results[k] = virtual
 	end
-	
+
 	return results
 end
 
@@ -188,9 +195,9 @@ end
 local function RegisterMount(letter, mount)
 	assert(type(letter == "string"), "RegisterMount(): arg #1 must be a string")
 	letter = letter:sub(1, 1)
-	
+
 	assert(type(letter == "table"), "RegisterMount(): arg #2 must be a mount")
-	
+
 	mount.__letter = letter
 	mounts[letter] = mount
 end
@@ -225,19 +232,19 @@ do
 			local args = { ... }
 			local pathCount = 0
 			local mount = nil
-			
+
 			local function GetArg(i, expected)
 				local arg = args[i]
-				
+
 				if expected ~= nil then
 					assert(type(arg) == expected, k .. "(): arg #" .. i .. " must be a " .. expected .. ", got " .. type(arg))
 				end
-				
+
 				return arg
 			end
-			
+
 			local newArgs = {}
-			
+
 			for i,t in pairs(v) do
 				if t == FS_ARG_PATH then
 					if pathCount == 0 then
@@ -246,10 +253,10 @@ do
 						drive = drive or System.Path.GetDefaultDrive()
 						mount = GetMountFromDrive(drive)
 					end
-					
+
 					pathCount = pathCount + 1
 				end
-				
+
 				newArgs[#newArgs + 1] = GetArg(i)
 			end
 
@@ -270,14 +277,14 @@ end
 return {
 	Mount = Mount,
 	DirMount = DirMount,
-	
+
 	RealToVirtual = RealToVirtual,
-	
+
 	GetMountFromDrive = GetMountFromDrive,
 	RegisterMount = RegisterMount,
 	Unmount = Unmount,
 	GetMounts = GetMounts,
 	IsDrive = IsDrive,
-	
+
 	GetFSAPI = GetFSAPI
 }
