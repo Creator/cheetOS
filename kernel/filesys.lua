@@ -121,12 +121,7 @@ end
 function DirMount:isDir(path)
 	local resolved = self:Resolve(path)
 	local normalised = System.Path.Normalise(resolved)
-
-	if normalised:sub(1, #self.__realPath) ~= self.__realPath then
-		return false
-	end
-
-	return _fs.isDir(resolved)
+	return normalised:sub(1, #self.__realPath) == self.__realPath and _fs.isDir(resolved)
 end
 
 function DirMount:isReadOnly(path)

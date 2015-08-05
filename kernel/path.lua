@@ -13,8 +13,6 @@ local function GetDriveAndPath(path)
 	if drive == nil then filePattern = "(.*)" end
 
 	local filePath = path:match(filePattern)
-	if filePath == "" then filePath = nil end
-	
 	return drive, filePath
 end
 
@@ -36,7 +34,7 @@ local function GetRootElement(path)
 
 	for i=1,#path do
 		local c = path:sub(i, i)
-		
+
 		if i > 1 and (c == "/" or c == "\\") then
 			break
 		end
