@@ -1,8 +1,13 @@
 local newDrive = ...
 local drive = System.Path.GetDriveAndPath(newDrive or "") or newDrive
 
+if drive == nil then
+	printError("Usage: " .. shell.getRunningProgram() .. " <drive>")
+	return
+end
+
 if not System.File.IsDrive(drive) then
-	printError(tostring(newDrive) .. " is not a valid drive!")
+	printError(tostring(drive) .. " is not a valid drive!")
 	return
 end
 
