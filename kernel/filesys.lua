@@ -173,7 +173,7 @@ function DirMount:open(path, mode)
 end
 
 function DirMount:getDir(path)
-	return _fs.getDir(self:Resolve(path))
+	return RealToVirtual(_fs.getDir(self:Resolve(path)))
 end
 
 function DirMount:find(wildcard)
