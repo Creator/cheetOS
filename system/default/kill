@@ -1,0 +1,37 @@
+local task = ...
+
+local function printUsage()
+  printError("Usage: " .. shell.getRunningProgram() .. " <task id/task name>")
+end
+
+if task == nil then
+  printUsage()
+  return
+end
+
+task = tonumber(task) or task
+
+do
+  if type(task) == "number" then
+    local t = System.Tasks.GetTaskByTID(task)
+    if t == nil then
+      printError("No such task")
+    else
+      print("Killing task " .. t.TID)
+      t:SendSignal(System.Tasks.Signal.Kill)
+    end
+  elseif type(task) == "string" then
+    local found = false
+    for _,v in pairs(System.Tasks.List()) do
+      if v.Name == task then
+        print("Killing task " .. v.TID)
+        v:SendSignal(System.Tasks.Signal.Kill)
+        found = true
+      end
+    end
+
+    if not found then
+      printError("No such task")
+    end
+  end
+end
