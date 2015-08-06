@@ -6,10 +6,10 @@ local function GetDriveAndPath(path)
 
 	if path == nil then error("path can't be nil", 2) end
 
-	local drive = path:match("([A-Z])%:")
+	local drive = path:match("([A-Z])[%:%%]")
 	if drive == "" then drive = nil end
 
-	local filePattern = "[A-Z]%:(.*)"
+	local filePattern = "[A-Z][%:%%](.*)"
 	if drive == nil then filePattern = "(.*)" end
 
 	local filePath = path:match(filePattern)
@@ -17,7 +17,7 @@ local function GetDriveAndPath(path)
 end
 
 local function GetPathWithoutDrive(path)
-	return path:match("[A-Z]:(.*)") or "/"
+	return path:match("[A-Z][%:%%](.*)") or "/"
 end
 
 local function GetDefaultDrive()
@@ -50,7 +50,9 @@ local function GetRootElementWithDrive(path)
 	return drive .. name
 end
 
-local function Normalise(path)
+local function Normalise(path, driveSep)
+	driveSep = driveSep or ":"
+
 	if path == nil then error("path can't be nil", 2) end
 	local drive, fullPath = GetDriveAndPath(path)
 
@@ -73,13 +75,15 @@ local function Normalise(path)
 	end
 
 	if drive ~= nil then
-		fullPath = drive .. ":" .. (fullPath or "/")
+		fullPath = drive .. driveSep .. (fullPath or "/")
 	end
 
 	return fullPath
 end
 
-local function Combine(path1, path2)
+local function Combine(path1, path2, driveSep)
+	driveSep = driveSep or ":"
+
 	local d1, p1 = GetDriveAndPath(path1)
 	local d2, p2 = GetDriveAndPath(path2)
 
@@ -89,9 +93,9 @@ local function Combine(path1, path2)
 			error("paths have differing drives!", 2)
 		end
 
-		return d1 .. ":" .. combined
+		return d1 .. driveSep .. combined
 	elseif (d1 ~= nil and d2 == nil) or (d1 == nil and d2 ~= nil) then
-		return (d1 or d2) .. ":" .. combined
+		return (d1 or d2) .. driveSep .. combined
 	elseif d1 == nil and d2 == nil then
 		return combined
 	end

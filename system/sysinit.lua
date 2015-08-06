@@ -1,19 +1,6 @@
 local ok, err = pcall(function()
 	local cdir = "S:/"
-
-	local path = {
-		".";
-		"S:/default";
-		"U:/global";
-		"R:/programs";
-		"R:/programs/rednet";
-		"R:/programs/fun";
-		"R:/programs/fun/advanced";
-		"R:/programs/http";
-		"R:/programs/advanced";
-		"R:/programs/pocket";
-		"R:/programs/command";
-	}
+	local path = ".:S%/default:U%/global:R%/programs:R%/programs/rednet:R%/programs/fun:R%/programs/fun/advanced:R%/programs/http:R%/programs/advanced:R%/programs/pocket:R%/programs/command"
 
 	local aliases = {}
 
@@ -78,11 +65,11 @@ local ok, err = pcall(function()
 	end
 
 	shell.path = function()
-		error("shell.path(): not available in basic shell!", 2)
+		return path
 	end
 
 	shell.setPath = function(newPath)
-		error("shell.path(): not available in basic shell!", 2)
+		path = newPath
 	end
 
 	shell.__addToPath = function(dir)
@@ -126,7 +113,9 @@ local ok, err = pcall(function()
 		return System.Path.GetDriveAndPath(cdir)
 	end
 
-	shell.resolve = function(file)
+	shell.resolve = function(file, driveSep)
+		driveSep = driveSep or ":"
+
 		local drive,_ = System.Path.GetDriveAndPath(file)
 		local cdrive = shell.__drive()
 		local _cdir = cdir
@@ -137,9 +126,9 @@ local ok, err = pcall(function()
 
 		local firstChar = file:sub(1, 1)
 		if firstChar == "/" or firstChar == "\\" then -- root!
-			return System.Path.Combine(cdrive .. ":/", file)
+			return System.Path.Combine(cdrive .. driveSep .. "/", file, driveSep)
 		else
-			return System.Path.Combine(_cdir, file)
+			return System.Path.Combine(_cdir, file, driveSep)
 		end
 	end
 
@@ -148,7 +137,7 @@ local ok, err = pcall(function()
 			name = aliases[name]
 		end
 
-		for _,entry in pairs(path) do
+		for entry in path:gmatch("[^%:]+") do
 			if fs.exists(entry) and fs.isDir(entry) then
 				for _, file in pairs(fs.list(entry)) do
 					if fs.getName(name) == fs.getName(file) then
