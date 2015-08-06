@@ -1,24 +1,39 @@
 local w,h = term.getSize()
 
 local columns = {
-	"TID", "Name"
+	["State"] = function(task)
+		return task:GetState()
+	end,
+
+	["Name"] = function(task)
+		return task.Name
+	end,
+
+	["TID"] = function(task)
+		return task.TID
+	end,
 }
 
 local function makeProcTable()
 	local tbl = {}
+	local cols = {}
 
-	table.insert(tbl, columns)
+	for k,_ in pairs(columns) do
+		table.insert(cols, k)
+	end
+
+	table.insert(tbl, cols)
 
 	for _,v in pairs(System.Tasks.List()) do
 		local entry = {}
 
-		for i,c in pairs(columns) do
-			entry[i] = tostring(v[columns[i]])
+		for _,c in pairs(columns) do
+			table.insert(entry, tostring(c(v)))
 		end
 
 		table.insert(tbl, entry)
 	end
-	
+
 	return tbl
 end
 

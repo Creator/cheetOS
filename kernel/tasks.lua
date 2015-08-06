@@ -156,7 +156,17 @@ function Task:Start(...)
 
 	setmetatable(env, { __index = self.__libTbl })
 
-	self.__sandbox = System.Sandbox.NewSandbox(self.__file, env)
+	local ok, err = pcall(function()
+		self.__sandbox = System.Sandbox.NewSandbox(self.__file, env)
+	end)
+
+	if not ok then
+		self.__coro = nil
+		self:__handleDeath()
+		error(err, 0)
+		return
+	end
+
 	self.__func = self.__sandbox:GetFunction()
 	self.__coro = coroutine.create(self.__func)
 	self.__state = Tasks.TaskState.Alive
