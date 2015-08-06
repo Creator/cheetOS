@@ -9,14 +9,25 @@ do
 		printUsage()
 		return
 	end
-	
+
 	drive = System.Path.GetDriveAndPath(drive) or drive
-	
+
 	if System.File.IsDrive(drive) then
 		printError("The drive " .. drive .. " already exists")
 		return
 	end
-	
+
 	print("Mounting " .. dir .. " as " .. drive .. ":/")
 	System.File.RegisterMount(drive, System.File.DirMount(dir))
+
+	if drive == "K" then
+		if term.isColour() then
+			term.setTextColour(colours.yellow)
+		end
+
+		print("Warning: Drive K:/ will not persist! You must re-mount it on reboot. Use a different drive letter to prevent this.")
+	else
+		System.Registry.Set("FileSystem/Mounts/" .. drive, dir)
+		System.Registry.Save()
+	end
 end

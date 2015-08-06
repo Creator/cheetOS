@@ -1,3 +1,17 @@
+local registryEntry = {
+	StartupFile = "U:/start.ss",
+	StartWorkingDir = "U:/",
+
+	TextColour = "cyan",
+	BackgroundColour = "black",
+
+	ActiveTextColour = "white",
+	ActiveBackgroundColour = "grey"
+}
+
+-- Make sure the shell keys exist
+System.Registry.ValidateKey("Shell", registryEntry)
+
 local function setColours(fg, bg)
 	if fg ~= nil then
 		term.setTextColour(term.isColour() and fg or colours.white)
@@ -12,8 +26,22 @@ local function processInput(input)
 	return shell.run(input)
 end
 
+local function getColourFromRegistry(key)
+	local colour = System.Registry.Get(key)
+	if type(colour) == "number" then
+		return colour
+	elseif type(colour) == "string" then
+		return colours[colour]
+	end
+end
+
+local textColour = getColourFromRegistry("Shell/TextColour")
+local backgroundColour = getColourFromRegistry("Shell/BackgroundColour")
+local activeTextColour = getColourFromRegistry("Shell/ActiveTextColour")
+local activeBackgroundColour = getColourFromRegistry("Shell/ActiveBackgroundColour")
+
 local function runShell()
-	setColours(colours.cyan, colours.black)
+	setColours(textColour, backgroundColour)
 	term.clear()
 	term.setCursorPos(1, 1)
 
@@ -31,12 +59,15 @@ local function runShell()
 
 	while true do
 		local ok, err = pcall(function()
-			setColours(colours.cyan, colours.black)
+			setColours(textColour, activeBackgroundColour)
+			term.clearLine()
 			write(shell.dir() .. "> ")
 
-			setColours(colours.white, colours.black)
+			setColours(activeTextColour, activeBackgroundColour)
 			local input = read(nil, history)
 
+			setColours(colours.white, backgroundColour)
+			term.clearLine()
 			processInput(input)
 			history[#history + 1] = input
 		end)

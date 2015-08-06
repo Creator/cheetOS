@@ -1,0 +1,76 @@
+local cmd = ...
+local args = { select(2, ...) }
+
+local function printUsage()
+  printError("Type '" .. shell.getRunningProgram() .. " help' to show a list of available commands")
+end
+
+do
+  local commands = {
+    set = function(key, value)
+      if key == nil then
+        return false, "No key was specified"
+      end
+
+      if value == nil then
+        return false, "No value was specified"
+      end
+
+      print("Setting " .. key .. " to " .. value)
+      System.Registry.Set(key, value)
+      System.Registry.Save()
+      return true
+    end,
+
+    get = function(key)
+      if key == nil then
+        return false, "No key was specified"
+      end
+
+      local value = System.Registry.Get(key)
+      write("=> ")
+
+      if type(value) == "table" then
+        print()
+
+        local encoded = System.JSON.encodePretty(value):gsub("\t", "  ")
+        print(encoded)
+      else
+        print(tostring(value))
+      end
+
+      return true
+    end,
+
+    del = function(key)
+      if key == nil then
+        return false, "No key was specified"
+      end
+
+      print("Deleting " .. key)
+      System.Registry.Delete(key)
+      return true
+    end,
+
+    help = function()
+      print("List of commands:")
+      print("set <key> <value> - Sets a registry key to a value")
+      print("get <key>         - Outputs the value of a key")
+      print("del <key>         - Deletes the specified key")
+      print("help              - Displays help")
+      return true
+    end
+  }
+
+  local command = commands[cmd]
+  if command == nil then
+    printUsage()
+    return
+  else
+    local ok, err = command(unpack(args))
+    if not ok then
+      printError(err)
+      return
+    end
+  end
+end

@@ -16,4 +16,6 @@ alias cls clear
 
 alias rs redstone
 
+alias reg registry
+
 echo Basic Shell for cheetOS

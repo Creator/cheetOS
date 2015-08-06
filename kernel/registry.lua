@@ -9,11 +9,6 @@ local __registry = {
     Mounts = {
       U = "/user"
     }
-  },
-
-  Shell = {
-    StartupFile = "U:/start.ss",
-    StartWorkingDir = "U:/"
   }
 }
 
@@ -63,13 +58,31 @@ function Registry.Get(key)
   for _,v in pairs(elems) do
     dir = last[v]
     if dir == nil then
-      error(v .. ": invalid path element", 2)
+      return nil, v
     end
 
     last = dir
   end
 
   return dir
+end
+
+function Registry.ValidateKey(key, tbl)
+  local dir = System.Registry.Get(key)
+  if dir == nil then
+    dir = {}
+    System.Registry.Set(key, dir)
+  end
+
+  for k,v in pairs(tbl) do
+    if dir[k] == nil then
+      dir[k] = v
+    end
+  end
+end
+
+function Registry.Delete(key)
+  Registry.Set(key, nil)
 end
 
 function Registry.Save()
