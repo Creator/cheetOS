@@ -49,6 +49,7 @@ do
 
       print("Deleting " .. key)
       System.Registry.Delete(key)
+      System.Registry.Save()
       return true
     end,
 
