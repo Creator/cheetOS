@@ -65,11 +65,11 @@ local function runShell()
 
 			setColours(activeTextColour, activeBackgroundColour)
 			local input = read(nil, history)
+			history[#history + 1] = input
 
 			setColours(colours.white, backgroundColour)
 			term.clearLine()
 			processInput(input)
-			history[#history + 1] = input
 		end)
 
 		if not ok then
