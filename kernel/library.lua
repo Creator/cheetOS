@@ -7,10 +7,10 @@ function Library.Load(file, ...)
 	local env = setmetatable({}, {
 		__index = task:GetSandbox():GetEnv(),
 		__tostring = function()
-			return "API (" .. System.Path.Normalise(file) .. ")"
+			return "Library (" .. System.Path.Normalise(file) .. ")"
 		end
 	})
-	
+
 	return env
 end
 

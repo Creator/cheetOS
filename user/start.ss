@@ -18,4 +18,8 @@ alias rs redstone
 
 alias reg registry
 
+alias tasklist tasks
+alias ps tasks
+alias procs tasks
+
 echo Basic Shell for cheetOS
