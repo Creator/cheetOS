@@ -123,6 +123,10 @@ function Task:GetLibrary(name)
 	return self.__libs[name]
 end
 
+function Task:GetSandbox()
+	return self.__sandbox
+end
+
 function Task:Start(...)
 	local env = {}
 
@@ -131,7 +135,10 @@ function Task:Start(...)
 	env.__FILE__	= System.Path.Normalise(self.__file)
 	env.__NAME__	= self.Name
 
-	env.shell 		= System.ShellMgr.GetShell()
+	if System.ShellMgr then
+		env.shell 		= System.ShellMgr.GetShell()
+	end
+	
 	env.fs 			= System.File.GetFSAPI()
 
 	for k,v in pairs(__replacements) do

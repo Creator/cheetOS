@@ -9,6 +9,8 @@ setmetatable(Sandbox, {
 
 		local env = setmetatable({}, { __index = _env })
 
+		self.__env = env
+
 		if load then
 			-- Lua 5.2 (CC1.74+)
 			local chunk, msg = loadfile(file, env)
@@ -36,6 +38,10 @@ setmetatable(Sandbox, {
 
 function Sandbox:GetFunction()
 	return self.__func
+end
+
+function Sandbox:GetEnv()
+	return self.__env
 end
 
 function SandboxLib.NewSandbox(...)

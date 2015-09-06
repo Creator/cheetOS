@@ -15,12 +15,12 @@ local components = {
 	{ "Path", "kernel/path.lua" };
 	{ "File", "kernel/filesys.lua" };
 
+	{ "Sandbox", "K:/sandbox.lua" };
 	{ "Tasks", "K:/tasks.lua"};
 	{ "Library", "K:/library.lua" };
 	{ "JSON", "K:/json.lua" };
 	{ "Registry", "K:/registry.lua" };
 	{ "Mounts", "K:/mounts.lua" };
-	{ "Sandbox", "K:/sandbox.lua" };
 	{ "ShellMgr", "K:/shellmgr.lua" };
 }
 

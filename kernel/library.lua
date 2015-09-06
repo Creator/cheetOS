@@ -1,25 +1,15 @@
 local Library = {}
 
 function Library.Load(file, ...)
-	local env = {}
-	setmetatable(env, { __index = _G })
-	local chunk, err = loadfile(file, env)
-	if chunk == nil then
-		error("Couldn't load lib " .. fs.getName(file) .. ": " .. err, 2)
-		return
-	end
-	
-	local coro = coroutine.create(chunk)
-	local success, event = coroutine.resume(coro, ...)
-	
-	if success then
-		if event ~= nil then
-			error("Libs are not allowed to yield!", 2)
+	local task = System.Tasks.NewTask(file, false)
+	task:Start(...)
+
+	local env = setmetatable({}, {
+		__index = task:GetSandbox():GetEnv(),
+		__tostring = function()
+			return "API (" .. System.Path.Normalise(file) .. ")"
 		end
-	else
-		error("Error in lib " .. fs.getName(file) .. ": " .. tostring(event), 2)
-		return
-	end
+	})
 	
 	return env
 end
