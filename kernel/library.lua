@@ -4,7 +4,7 @@ function Library.Load(file, ...)
 	local task = System.Tasks.NewTask(file, false)
 	task:Start(...)
 
-	local env = setmetatable({}, {
+	local env = setmetatable({ function() end }, {
 		__index = task:GetSandbox():GetEnv(),
 		__tostring = function()
 			return "Library (" .. System.Path.Normalise(file) .. ")"
