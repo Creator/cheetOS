@@ -1,0 +1,15 @@
+local sock = System.Socket.NewNetSocket(
+  System.Devices.GetAnyOfType("modem", function(m)
+    return not m.isWireless()
+  end),
+
+  50, 30)
+  
+sock:Transmit("Hello World")
+print("-> " .. tostring(sock:Receive()))
+
+if sock.GetDistance then
+  print("Distance between peers is " .. sock:GetDistance())
+end
+
+sock:Close()
