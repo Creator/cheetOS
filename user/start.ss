@@ -1,3 +1,7 @@
+//
+// Safe to change
+//
+
 alias ls list
 alias dir list
 
@@ -26,6 +30,12 @@ alias devs devices
 alias devcs devices
 alias devlist devices
 
+//
+// You might break things here
+//
 start devservice.lua
 
+//
+// Safe
+//
 echo Basic Shell for cheetOS
