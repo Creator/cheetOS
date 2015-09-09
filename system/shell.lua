@@ -61,7 +61,7 @@ local function runShell()
 		local ok, err = pcall(function()
 			setColours(textColour, activeBackgroundColour)
 			term.clearLine()
-			write(shell.dir() .. "> ")
+			write(shell.dir() .. "$ ")
 
 			setColours(activeTextColour, activeBackgroundColour)
 			local input = read(nil, history)
