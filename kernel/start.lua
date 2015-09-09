@@ -22,6 +22,7 @@ local components = {
 	{ "Registry", "K:/registry.lua" };
 	{ "Mounts", "K:/mounts.lua" };
 	{ "ShellMgr", "K:/shellmgr.lua" };
+	{ "Socket", "K:/socket.lua" };
 }
 
 local function loadComponents(loadCallback)
@@ -35,7 +36,23 @@ local function loadComponents(loadCallback)
 		end
 
 		local ok, err = pcall(function()
-			System[v[1]] = chunk()
+			local module = chunk()
+			if module ~= nil then
+				module[1] = function() end -- Make sure the table can't be serialised
+
+				local mt = getmetatable(module)
+				if mt == nil then
+					mt = setmetatable(module, {})
+				end
+
+				mt.__tostring = function()
+					return "Kernel Module (" .. v[1] .. ")"
+				end
+
+				setmetatable(module, mt)
+
+				System[v[1]] = module
+			end
 		end)
 
 		if not ok then
