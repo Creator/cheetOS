@@ -1,0 +1,28 @@
+local input = ...
+
+if input == nil then
+  printError("Usage: " .. shell.getRunningProgram() .. " <TID/command>")
+  return
+end
+
+do
+  local result = nil
+  local asNum = tonumber(input)
+  if asNum == nil then
+    -- Command
+    result = shell.resolveProgram(input)
+  else
+    -- Task
+    local task = System.Tasks.GetTaskByTID(asNum)
+    if task then
+      result = task:GetFile()
+    end
+  end
+
+  if result == nil then
+    printError("Couldn't find origin of " .. tostring(input))
+    return
+  end
+
+  print("-> " .. tostring(result))
+end

@@ -1,0 +1,20 @@
+local name = ...
+
+if name == nil then
+  printError("Usage: " .. shell.getRunningProgram() .. " <task name>")
+  return
+end
+
+do
+  local found = false
+  for _,v in pairs(System.Tasks.List()) do
+    if v.Name == name then
+      print("-> " .. v.Name .. " has TID " .. v.TID)
+      found = true
+    end
+  end
+
+  if not found then
+    printError("No results.")
+  end
+end
