@@ -138,7 +138,7 @@ function Task:Start(...)
 	if System.ShellMgr then
 		env.shell 		= System.ShellMgr.GetShell()
 	end
-	
+
 	env.fs 			= System.File.GetFSAPI()
 
 	for k,v in pairs(__replacements) do
@@ -270,7 +270,8 @@ function Tasks.KeepAlive(evtData)
 		end
 	end
 
-	for _,v in pairs(toRemove) do
+	for i=1,#toRemove do
+		local v = toRemove[i]
 		taskList[v] = nil
 	end
 end

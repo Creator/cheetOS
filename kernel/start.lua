@@ -22,6 +22,7 @@ local components = {
 	{ "Registry", "K:/registry.lua" };
 	{ "Mounts", "K:/mounts.lua" };
 	{ "ShellMgr", "K:/shellmgr.lua" };
+	{ "Devices", "K:/devices.lua" };
 	{ "Socket", "K:/socket.lua" };
 }
 

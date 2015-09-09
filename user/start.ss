@@ -22,4 +22,10 @@ alias tasklist tasks
 alias ps tasks
 alias procs tasks
 
+alias devs devices
+alias devcs devices
+alias devlist devices
+
+start devservice.lua
+
 echo Basic Shell for cheetOS

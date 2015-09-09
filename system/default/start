@@ -1,0 +1,18 @@
+local command = ...
+local args = { select(2, ...) }
+
+if command == nil then
+  printError("Usage: " .. shell.getRunningProgram() .. " <command>")
+  return
+end
+
+do
+  local path = shell.resolveProgram(command)
+  if not fs.exists(path) then
+    printError("No such command")
+    return
+  end
+
+  local task = System.Tasks.NewTask(path)
+  task:Start(unpack(args or {}))
+end
