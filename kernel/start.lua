@@ -11,7 +11,7 @@ System = {
 	Version = "1.0";
 }
 
-local components = {
+local modules = {
 	{ "Path", "kernel/path.lua" };
 	{ "File", "kernel/filesys.lua" };
 
@@ -22,12 +22,13 @@ local components = {
 	{ "Registry", "K:/registry.lua" };
 	{ "Mounts", "K:/mounts.lua" };
 	{ "ShellMgr", "K:/shellmgr.lua" };
-	{ "Devices", "K:/devices.lua" };
+	{ "Network", "K:/devices.lua" };
 	{ "Socket", "K:/socket.lua" };
 }
 
-local function loadComponents(loadCallback)
-	for _,v in pairs(components) do
+local function loadModules(loadCallback)
+	for i=1,#modules do
+		local v = modules[i]
 		local chunk, msg = loadfile(v[2], env)
 
 		loadCallback(v[1], v[2])
@@ -81,8 +82,8 @@ do
 	log = _fs.open("system/boot_log.txt", "w")
 
 	print("Running cheetOS v" .. System.Version)
-	print("Loading components...")
-	loadComponents(function(k, v)
+	print("Loading modules...")
+	loadModules(function(k, v)
 		print(" -> " .. k .. " (" .. v .. ")...")
 	end)
 
