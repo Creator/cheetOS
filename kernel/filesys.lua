@@ -6,6 +6,10 @@ local function GetFSAPI()
 	return setmetatable({}, { __index = fs })
 end
 
+local function GetRealFSAPI()
+	return setmetatable({}, { __index = _fs })
+end
+
 local assert = function(cond, err)
 	if not cond then
 		error(err, 4)
@@ -290,5 +294,6 @@ return {
 	GetMounts = GetMounts,
 	IsDrive = IsDrive,
 
-	GetFSAPI = GetFSAPI
+	GetFSAPI = GetFSAPI,
+	GetRealFSAPI = GetRealFSAPI
 }

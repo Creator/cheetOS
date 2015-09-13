@@ -1,0 +1,14 @@
+do
+  local _fs = System.File.GetRealFSAPI()
+  local rootFiles = _fs.list("/")
+
+  for i=1,#rootFiles do
+    local file = rootFiles[i]
+    if _fs.isDir(file) then
+      local drive = _fs.getDrive(file)
+      if drive ~= "hdd" and drive ~= "rom" then
+        print("-> " .. _fs.getName(file) .. " (" .. drive .. ")")
+      end
+    end
+  end
+end
