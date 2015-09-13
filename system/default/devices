@@ -1,5 +1,5 @@
 do
-  for k,v in pairs(System.Devices.List()) do
-    print("-> " .. tostring(System.Devices.GetDevType(k) or "N/A") .. " (" .. tostring(k) .. ")")
+  for k,v in pairs(System.Network.List()) do
+    print("-> " .. tostring(System.Network.GetDevType(k) or "N/A") .. " (" .. tostring(k) .. ")")
   end
 end
