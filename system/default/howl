@@ -1,0 +1,1176 @@
+local function e(q)local j=setmetatable({},{__index=getfenv()})return
+setfenv(q,j)()or j end
+local t=e(function()local function q(z)
+if type(z)==
+"string"then return string.format("%q",z)else return tostring(z)end end
+local function j(z,_,E,T)local A=""local O=type(z)
+if O==
+"table"then local I=E[z]
+if I then A=A..
+(_.."--[[ Object@"..I.." ]] { }").."\n"else
+I=E.length+1 E[z]=I E.length=I A=A..
+(_.."--[[ Object@"..I.." ]] {").."\n"
+for N,S in pairs(z)do
+if
+type(N)=="table"then A=A.. (_.."\t{").."\n"A=A..
+j(N,_.."\t\t",E,T)A=A..j(S,_.."\t\t",E,T)A=A..
+(_.."\t},").."\n"elseif type(S)=="table"then
+A=A.. (_..
+"\t["..q(N).."] = {").."\n"A=A..j(S,_.."\t\t",E,T)
+A=A.. (_.."\t},").."\n"else A=A..
+(_.."\t["..q(N).."] = "..q(S)..",").."\n"end end
+if T then local N=getmetatable(z)if N then
+A=A.. (_.."\tMetatable = {").."\n"A=A..j(N,_.."\t\t",E,T)
+A=A.. (_.."\t}").."\n"end end A=A.. (_.."}").."\n"end else A=A.. (_..q(z)).."\n"end return A end
+local function x(z,_,E)if _==nil then _=true end return j(z,E or"",{length=0},_)end return x end)
+local a=e(function()local q=false local function j(L,...)local U=term.isColor()
+if U then term.setTextColor(L)end print(...)
+if U then term.setTextColor(colors.white)end end
+local function x(L,U)
+local C=term.isColor()if C then term.setTextColor(L)end write(U)if C then
+term.setTextColor(colors.white)end end local function z(...)j(colors.green,...)end
+local function _(L)if L~=nil then q=L end return q end local function E(...)
+if q then local L,U=pcall(function()error("",4)end)
+x(colors.gray,U)j(colors.lightGray,...)end end
+local function T(...)
+if q then local L,U=pcall(function()
+error("",4)end)x(colors.gray,U)
+local C=false
+for M,F in ipairs({...})do local W=type(F)if W=="table"then
+local Y=t or textutils.serialize F=Y(F)else F=tostring(F)end
+if C then F=" "..F end C=true x(colors.lightGray,F)end print()end end
+local A={["^"]="%^",["$"]="%$",["("]="%(",[")"]="%)",["%"]="%%",["."]="%.",["["]="%[",["]"]="%]",["*"]="%*",["+"]="%+",["-"]="%-",["?"]="%?",["\0"]="%z"}local function O(L)return(L:gsub(".",A))end
+local I={["^"]="%^",["$"]="%$",["("]="%(",[")"]="%)",["%"]="%%",["."]="%.",["["]="%[",["]"]="%]",["+"]="%+",["-"]="%-",["?"]="%?",["\0"]="%z"}
+local function N(L,U)local C=L:sub(1,5)
+if C=="ptrn:"or C=="wild:"then local L=L:sub(6)
+if C=="wild:"then
+if U then
+local M=0
+L=((L:gsub(".",I)):gsub("(%*)",function()M=M+1 return"%"..M end))else L="^"..
+((L:gsub(".",I)):gsub("(%*)","(.*)")).."$"end end return{Type="Pattern",Text=L}else return{Type="Normal",Text=L}end end local function S(L)for U,C in ipairs(L)do L[C]=true end return L end local function H(L,U)
+local C=#L if C~=#U then return false end
+for i=1,C do if L[i]~=U[i]then return false end end return true end
+local R=print local D=printError
+return
+{Print=R,PrintError=D,PrintSuccess=z,PrintColor=j,WriteColor=x,IsVerbose=_,Verbose=E,VerboseLog=T,EscapePattern=O,ParsePattern=N,CreateLookup=S,MatchTables=H}end)
+local o=e(function()local q,j=type,pairs local x={}
+function x:update(H)if H then self.fn=H.fn or self.fn self.options=H.options or
+self.options end end
+local function z(H,R)return
+setmetatable({options=R or{},fn=H,channel=nil,id=math.random(1000000000)},{__index=x})end local _={}
+local function E(H,R)return
+setmetatable({stopped=false,namespace=H,callbacks={},channels={},parent=R},{__index=_})end
+function _:addSubscriber(H,R)local D=z(H,R)local L=(#self.callbacks+1)
+R=R or{}if R.priority and R.priority>=0 and R.priority<L then
+L=R.priority end
+table.insert(self.callbacks,L,D)return D end
+function _:getSubscriber(H)for i=1,#self.callbacks do local D=self.callbacks[i]if D.id==H then
+return{index=i,value=D}end end local R
+for D,L in
+j(self.channels)do R=L:getSubscriber(H)if R then break end end return R end
+function _:setPriority(H,R)local D=self:getSubscriber(H)
+if D.value then
+table.remove(self.callbacks,D.index)table.insert(self.callbacks,R,D.value)end end
+function _:addChannel(H)self.channels[H]=E(H,self)return self.channels[H]end
+function _:hasChannel(H)return H and self.channels[H]and true end function _:getChannel(H)
+return self.channels[H]or self:addChannel(H)end
+function _:removeSubscriber(H)
+local R=self:getSubscriber(H)
+if R and R.value then
+for D,L in j(self.channels)do L:removeSubscriber(H)end return table.remove(self.callbacks,R.index)end end
+function _:publish(H,...)
+for i=1,#self.callbacks do local R=self.callbacks[i]
+if
+not R.options.predicate or R.options.predicate(...)then local D,L=R.fn(...)if L then
+H[#H]=L end if D==false then return false,H end end end
+if parent then return parent:publish(H,...)else return true,H end end local T=E('root')
+local function A(H)local T=T
+if q(H)=="string"then if H:find(":")then
+H={H:match((H:gsub("[^:]+:?","([^:]+):?")))}else H={H}end end for i=1,#H do T=T:getChannel(H[i])end return T end local function O(H,R,D)return A(H):addSubscriber(R,D)end local function I(H,R)return
+A(R):getSubscriber(H)end local function N(H,R)
+return A(R):removeSubscriber(H)end
+local function S(H,...)return A(H):publish({},...)end
+return{GetChannel=A,Subscribe=O,GetSubscriber=I,RemoveSubscriber=N,Publish=S}end)
+local i=e(function()
+local q={__index=function(z,_)return
+function(E,...)local T=E.parser local A=T[_](T,E.name,...)if A==T then return E end return A end end}local j={}
+function j:Get(z,_)local E=self.options local T=E[z]if T~=nil then return T end
+local A=self.settings[z]
+if A then local O=A.aliases if O then
+for I,N in ipairs(O)do T=E[N]if T~=nil then return T end end end T=A.default if T~=nil then return T end end return _ end function j:Ensure(z)local _=self:Get(z)
+if _==nil then error(z.." must be set")end return _ end function j:Default(z,_)
+if _==nil then _=true end self:_SetSetting(z,"default",_)self:_Changed()
+return self end
+function j:Alias(z,_)
+local E=self.settings local T=E[z]if T then local A=T.aliases
+if A==nil then T.aliases={_}else table.insert(A,_)end else E[z]={aliases={_}}end
+self:_Changed()return self end
+function j:Description(z,_)return self:_SetSetting(z,"description",_)end function j:TakesValue(z,_)if _==nil then _=true end
+return self:_SetSetting(z,"takesValue",_)end
+function j:_SetSetting(z,_,E)local T=self.settings
+local A=T[z]if A then A[_]=E else T[z]={[_]=E}end return self end
+function j:Option(z)return setmetatable({name=z,parser=self},q)end function j:Arguments()return self.arguments end function j:_Changed()
+o.Publish({"ArgParse","changed"},self)end
+function j:Help(z)
+for _,E in pairs(self.settings)do local T='-'if E.takesValue then T="--"_=
+_.."=value"end if#_>1 then T='--'end a.WriteColor(colors.white,z..
+T.._)local A=""local O=E.aliases
+if O and#O>0 then
+local N=#O A=A.." ("for i=1,N do local S="-"..O[i]if#S>2 then S="-"..S end
+if i<N then S=S..', 'end A=A..S end A=A..")"end a.WriteColor(colors.brown,A)local I=E.description if I and I~=""then a.PrintColor(colors.lightGray,
+" "..I)end end end
+function j:Parse(z)local _=self.options local E=self.arguments
+for T,A in ipairs(z)do
+if A:sub(1,1)=="-"then
+if
+A:sub(2,2)=="-"then local O,I=A:match("([%w_%-]+)=([%w_%-]+)",3)if O then _[O]=I else
+A=A:sub(3)local N=A:sub(1,4)local I=true
+if N=="not-"or N=="not_"then I=false A=A:sub(5)end _[A]=I end else for i=2,#A do
+_[A:sub(i,i)]=true end end else table.insert(E,A)end end return self end
+local function x(z)return
+setmetatable({options={},arguments={},settings={}},{__index=j}):Parse(z)end return{Parser=j,Options=x}end)
+local n=e(function()
+local function q()local z=shell.dir()local _={"Howlfile","Howlfile.lua"}
+while true do
+for E,T in
+ipairs(_)do howlFile=fs.combine(z,T)if fs.exists(howlFile)and
+not fs.isDir(howlFile)then return T,z end end if z=="/"or z==""then break end z=fs.getDir(z)end
+error("Cannot find HowlFile. Looking for '"..table.concat(_,"', '").."'")end local j={}
+local function x(z)
+local _=setmetatable(z or{},{__index=getfenv()})_._G=_G
+function _.loadfile(E)return setfenv(loadfile(E),_)end function _.dofile(E)return _.loadfile(E)()end
+o.Publish({"HowlFile","env"},_)return _ end return{FindHowl=q,SetupEnvironment=x,CurrentDirectory=""}end)
+local s=e(function()local q={}
+function q:DoRequire(x,z)if self.filesProduced[x]then return true end
+local _=self.producesCache[x]
+if _ then self.filesProduced[x]=true return self:Run(_)end _=self.normalMapsCache[x]local E,T local A=x if _ then
+self.filesProduced[x]=true T=_.Name E=_.Pattern.From end
+for O,I in
+pairs(self.patternMapsCache)do if x:match(O)then self.filesProduced[x]=true T=I.Name
+E=x:gsub(O,I.Pattern.From)break end end
+if T then local O=self:DoRequire(E,true)
+if not O then if not z then
+a.PrintError("Cannot find '"..E.."'")end return false end return self:Run(T,E,A)end if fs.exists(fs.combine(n.CurrentDirectory,x))then
+self.filesProduced[x]=true return true end if not z then
+a.PrintError(
+"Cannot find a task matching '"..x.."'")end return false end
+function q:Run(x,...)local z=x
+if type(x)=="string"then z=self.tasks[x]if not z then a.PrintError("Cannot find a task called '"..
+x.."'")
+return false end elseif not z or not z.Run then
+a.PrintError("Cannot call task as it has no 'Run' method")return false end if self.ran[z]then return true end self.ran[z]=true
+os.queueEvent("sleep")os.pullEvent()return z:Run(self,...)end
+function q:Start(x)local z
+if x then z=self.tasks[x]else z=self.default x="<default>"end if not z then
+a.PrintError("Cannot find a task called '"..x.."'")return false end return self:Run(z)end
+function q:BuildCache()local x={}local z={}local _={}self.producesCache=x self.patternMapsCache=z
+self.normalMapsCache=_
+for E,T in pairs(self.tasks)do local A=T.produces if A then
+for I,N in ipairs(A)do local S=x[N]if S then
+error(string.format("Both '%s' and '%s' produces '%s'",S,E,N))end x[N]=E end end
+local O=T.maps
+if O then
+for I,N in ipairs(O)do
+local S=(N.Type=="Pattern"and z or _)local H=N.To local R=S[H]if R then
+error(string.format("Both '%s' and '%s' match '%s'",R,E,H))end S[H]={Name=E,Pattern=N}end end end return self end
+local function j(x)return
+setmetatable({ran={},filesProduced={},tasks=x.tasks,default=x.default,Traceback=x.Traceback,ShowTime=x.ShowTime},{__index=q}):BuildCache()end return{Factory=j,Context=q}end)
+local h=e(function()
+local function q(_,E)local T=a.ParsePattern(_,true)local A=a.ParsePattern(E)
+local O=T.Type
+assert(O==A.Type,"Both from and to must be the same type "..O.." and "..T.Type)return{Type=O,From=T.Text,To=A.Text}end local j={}
+function j:Depends(_)
+if type(_)=="table"then local E=self.dependencies for T,A in ipairs(_)do
+table.insert(E,A)end else table.insert(self.dependencies,_)end return self end
+function j:Requires(_)
+if type(_)=="table"then local E=self.requires for T,_ in ipairs(_)do
+table.insert(E,_)end else table.insert(self.requires,_)end return self end
+function j:Produces(_)
+if type(_)=="table"then local E=self.produces for T,_ in ipairs(_)do
+table.insert(E,_)end else table.insert(self.produces,_)end return self end
+function j:Maps(_,E)table.insert(self.maps,q(_,E))return self end function j:Action(_)self.action=_ return self end function j:Description(_)
+self.description=_ return self end function j:_RunAction(...)
+return self.action(self,...)end
+function j:Run(_,...)for E,T in ipairs(self.dependencies)do if not _:Run(T)then
+return false end end
+for E,T in
+ipairs(self.requires)do if not _:DoRequire(T)then return false end end
+for E,T in ipairs(self.produces)do _.filesProduced[T]=true end
+if self.action then local E={...}local T=""
+if#E>0 then newArgs={}for N,S in ipairs(E)do
+table.insert(newArgs,tostring(S))end T=" ("..
+table.concat(newArgs,", ")..")"end
+a.PrintColor(colors.cyan,"Running "..self.name..T)local A=os.clock()local O,I=true,nil
+if _.Traceback then
+xpcall(function()
+self:_RunAction(unpack(E))end,function(N)
+for i=5,15 do
+local S,I=pcall(function()error("",i)end)if N:match("Howlfile")then break end N=N.."\n  "..I end I=N O=false end)else O,I=pcall(self._RunAction,self,...)end
+if O then a.PrintSuccess(self.name..": Success")else a.PrintError(
+self.name..": Failure\n"..I)end if _.ShowTime then
+a.Print("\t","Took "..os.clock()-A.."s")end return O end return true end
+local x={__index=function(_,E)local T=j[E]if T then return T end
+if E:match("^%u")then local A=j[E]if A then return A end
+return function(_,O)
+if O==nil then O=true end _[(E:gsub("^%u",string.lower))]=O return
+_ end end end}
+local function z(_,E,T,A)if type(E)=="function"then T=E E={}end
+return setmetatable({name=_,action=T,dependencies=E or{},description=nil,maps={},requires={},produces={}},
+A or{__index=j})end return{Factory=z,Task=j,OptionTask=x}end)
+local r=e(function()local q={}function q:Task(x)
+return function(z,_)return self:AddTask(x,z,_)end end function q:AddTask(x,z,_)return
+self:InjectTask(h.Factory(x,z,_))end function q:InjectTask(x,z)
+self.tasks[z or x.name]=x return x end
+function q:Default(x)local z
+if x==nil then self.default=nil elseif type(x)==
+"string"then self.default=self.tasks[x]if not self.default then
+error("Cannot find task "..x)end else
+self.default=h.Factory("<default>",{},x)end return self end function q:Run(x)return self:RunMany({x})end
+function q:RunMany(x)
+local z=os.clock()local _ local E=s.Factory(self)if#x==0 then E:Start()else
+for T,A in ipairs(x)do _=E:Start(A)end end if E.ShowTime then
+a.PrintColor(colors.orange,"Took "..
+os.clock()-z.."s in total")end return _ end local function j()
+return setmetatable({tasks={},default=nil},{__index=q})end return{Factory=j,Runner=q}end)
+local d=e(function()local q={}
+function q:Name(z)self.name=z self:Alias(z)return self end function q:Alias(z)self.alias=z return self end
+function q:Depends(z)if type(z)=="table"then for E,T in
+ipairs(z)do self:Depends(T)end else
+table.insert(self.dependencies,z)end return self end
+function q:Prerequisite(z)
+if type(z)=="table"then
+for E,T in ipairs(z)do self:Prerequisite(T)end else table.insert(self.dependencies,1,z)end return self end
+function q:Export(z)if z==nil then z=true end self.shouldExport=z return self end
+function q:NoWrap(z)if z==nil then z=true end self.noWrap=z return self end local j={}
+local function x(z,_)return
+setmetatable({mainFiles={},files={},path=z or n.CurrentDirectory,namespaces={},shouldExport=false,parent=_},{__index=j})end
+function j:File(z)local _=self:_File(z)self.files[z]=_ return _ end
+function j:_File(z)
+return
+setmetatable({dependencies={},name=nil,alias=nil,path=z,shouldExport=true,noWrap=false,__isMain=false,__isFinalizer=false,parent=self},{__index=q})end function j:Finalizer(z)local _=self:FindFile(z)or self:File(z)
+_.__isFinalizer=true self.finalizer=_ end function j:Main(z)local _=
+self:FindFile(z)or self:_File(z)_.__isMain=true
+table.insert(self.mainFiles,_)return _ end function j:Depends(z)
+local _=self.mainFiles[1]assert(_,"Cannot find a main file")_:Depends(z)
+return self end function j:Prerequisite(z)
+local _=self.mainFiles[1]assert(_,"Cannot find a main file")
+_:Prerequisite(z)return self end
+function j:FindFile(z)
+local _=self.files local E=_[z]if E then return E end E=_[z..".lua"]if E then return E end for T,E in pairs(_)do if
+E.alias==z then return E end end return nil end
+function j:Iterate()local z={}
+local function _(T)if z[T.path]then return end z[T.path]=true for A,O in ipairs(T.dependencies)do
+local I=self:FindFile(O)
+if not I then error("Cannot find file "..O)end _(I)end
+coroutine.yield(T)end local E=self.mainFiles if#E==0 then E=self.files end
+return coroutine.wrap(function()for T,A in pairs(E)do
+_(A)end end)end function j:Export(z)self.shouldExport=z return self end function j:Namespace(z,_,E)local T=x(fs.combine(self.path,
+_ or""),self)
+self.namespaces[z]=T E(T)return T end
+function j:CloneDependencies(z)
+local _=setmetatable({},{__index=j})for E,T in pairs(self)do _[E]=T end _.mainFiles={}return _ end
+o.Subscribe({"HowlFile","env"},function(z)z.Dependencies=x z.Sources=x()end)return{File=q,Dependencies=j,Factory=x}end)
+do local q=string.format
+local j=[[
+local args = {...}
+xpcall(function()
+	(function(...)
+]]
+local x=[[
+	end)(unpack(args))
+end, function(err)
+	printError(err)
+	for i = 3, 15 do
+		local s, msg = pcall(error, "", i)
+		if msg:match("xpcall") then break end
+		printError("  ", msg)
+	end
+	error(err:match(":.+"):sub(2), 3)
+end)
+]]
+local z=[[
+local env = setmetatable({}, {__index = getfenv()})
+local function doWithResult(file)
+	local currentEnv = setmetatable({}, {__index = env})
+	local result = setfenv(assert(loadfile(file), "Cannot find " .. file), currentEnv)()
+	if result ~= nil then return result end
+	return currentEnv
+end
+local function doFile(file, ...)
+	return setfenv(assert(loadfile(file), "Cannot find " .. file), env)(...)
+end
+]]
+function d.Dependencies:CreateBootstrap(_,E)local T=self.path
+local A=fs.open(fs.combine(n.CurrentDirectory,_),"w")assert(A,"Could not create".._)if E.traceback then
+A.writeLine(j)end A.writeLine(z)local O={}
+for I in self:Iterate()do
+local N=q("%q",fs.combine(T,I.path))local S=I.name
+if I.__isMain then
+A.writeLine("doFile("..N..", ...)")elseif S then
+A.writeLine("env["..
+q("%q",S).."] = "..
+(I.noWrap and"doFile"or"doWithResult").."("..N..")")else A.writeLine("doFile("..N..")")end end if E.traceback then A.writeLine(x)end A.close()end
+function r.Runner:CreateBootstrap(_,E,T,A)
+return
+self:InjectTask(h.Factory(_,A,function(O)E:CreateBootstrap(T,O)end,h.OptionTask)):Description(
+"Creates a 'dynamic' combination of files in '"..T.."')"):Produces(T)end end
+do
+o.Subscribe({"Combiner","include"},function(q,j,x,z)
+if z.verify then local _,E=loadstring(x)
+if not _ then
+local T="Could not load ".. (j and
+("file "..j)or"string")if E~="nil"then T=T..":\n"..E end return false,T end end end)end
+do local q=string.find
+local j={header=[[
+		-- Maps
+		local lineToModule = setmetatable({{lineToModule}}, {
+			__index = function(t, k)
+				if k > 1 then return t[k-1] end
+			end
+		})
+		local moduleStarts = {{moduleStarts}}
+		local programEnd = {{lastLine}}
+
+		-- Stores the current file, safer than shell.getRunningProgram()
+		local _, currentFile = pcall(error, "", 2)
+		currentFile = currentFile:match("[^:]+")
+	]],updateError=[[
+		-- If we are in the current file then we should map to the old modules
+		if filename == currentFile then
+
+			-- If this line is after the program end then
+			-- something is broken, and so we just roll with it
+			if line > programEnd then return end
+
+			-- convert to module lines
+			filename = lineToModule[line] or "<?>"
+			local newLine = moduleStarts[filename]
+			if newLine then
+				line = line - newLine + 1
+			else
+				line = -1
+			end
+		end
+	]]}
+local x={header=[[
+		local finalizer = function(message, traceback) {{finalizer}} end
+	]],parseTrace=[[
+		local ok, finaliserError = pcall(finalizer, message, traceback)
+
+		if not ok then
+			printError("Finalizer Error: ", finaliserError)
+		end
+	]]}
+local z=([[
+end
+-- The main program executor
+	local args = {...}
+	local currentTerm = term.current()
+	local ok, returns = xpcall(
+		function() return {__program(unpack(args))} end,
+		function(message)
+			local _, err = pcall(function()
+			local error, pcall, printError, tostring,setmetatable = error, pcall, printError, tostring, setmetatable
+			{{header}}
+
+			local messageMeta = {
+				__tostring = function(self)
+					local msg = self[1] or "<?>"
+					if self[2] then msg = msg .. ":" .. tostring(self[2]) end
+					if self[3] and self[3] ~= " " then msg = msg .. ":" .. tostring(self[3]) end
+					return msg
+				end
+			}
+			local function updateError(err)
+				local filename, line, message = err:match("([^:]+):(%d+):?(.*)")
+				-- Something is really broken if we can't find a filename
+				-- If we can't find a line number than we must have `pcall:` or `xpcall`
+				-- This means, we shouldn't have an error, so we must be debugging somewhere
+				if not filename or not line then return end
+				line = tonumber(line)
+				{{updateError}}
+				return setmetatable({filename, line, message}, messageMeta)
+			end
+
+			-- Reset terminal
+			term.redirect(currentTerm)
+
+			-- Build a traceback
+			local topError = updateError(message) or message
+			local traceback = {topError}
+			for i = 6, 6 + 18 do
+				local _, err = pcall(error, "", i)
+				err = updateError(err)
+				if not err then break end
+				traceback[#traceback + 1] = err
+			end
+
+			{{parseTrace}}
+
+			printError(tostring(topError))
+			if #traceback > 1 then
+				printError("Raw Stack Trace:")
+				for i = 2, #traceback do
+					printError("  ", tostring(traceback[i]))
+				end
+			end
+			end)
+			if not _ then printError(err) end
+		end
+	)
+
+	if ok then
+		return unpack(returns)
+	end
+]])
+local function _(A)local O,I,N=1,1,1 local S=1 local H=#A while O<H do I,N=q(A,'\n',O,true)if not I then break end S=S+1
+O=N+1 end return S end local function E(A,O)
+return A:gsub("{{(.-)}}",function(I)return O[I]or""end)end
+o.Subscribe({"Combiner","start"},function(A,O,I)if A.finalizer then
+I.traceback=true end if I.lineMapping then I.oldLine=0 I.line=0 I.lineToModule={}
+I.moduleStarts={}end if I.traceback then
+O.write("local __program = function(...)")end end)local T=math.min
+o.Subscribe({"Combiner","write"},function(A,O,I,N)
+if N.lineMapping then O=O or"file"local S=N.line
+N.oldLine=S local H=S _(I)N.line=H S=S+1 H=H-1 local R,D=N.moduleStarts,N.lineToModule local L=R[O]if L then
+R[O]=T(S,L)else R[O]=S end D[T(S,H)]=O end end)
+o.Subscribe({"Combiner","end"},function(A,O,I)
+if I.traceback then local N={}local S={}
+if A.finalizer then local H=A.finalizer.path
+local R=fs.combine(A.path,H)
+local D=assert(fs.open(R,"r"),"Finalizer "..R.." does not exist")finalizerContents=D.readAll()D.close()if#finalizerContents==0 then finalizerContents=
+nil else
+o.Publish({"Combiner","include"},A,H,finalizerContents,I)end if finalizerContents then
+N[#N+1]=x S.finalizer=finalizerContents end end
+if I.lineMapping then N[#N+1]=j local H=textutils.serialize
+S.lineToModule=H(lineToModule)S.moduleStarts=H(moduleStarts)S.lastLine=I.line end toReplace={}
+for H,R in ipairs(N)do for D,L in pairs(R)do local U=toReplace[D]
+if U then U=U.."\n"else U=""end toReplace[D]=U..L end end O.write(E(E(z,toReplace),S))end end)end
+do local q=o.GetChannel{"Combiner"}local j="_W"
+local x=("local function "..j..
+[[(f)
+	local e=setmetatable({}, {__index = getfenv()})
+	return setfenv(f,e)() or e
+end]]):gsub("[\t\n ]+"," ")
+function d.Dependencies:Combiner(z,_)_=_ or{}local E=self.path local T=self.shouldExport
+local A=loadstring
+local O=fs.open(fs.combine(n.CurrentDirectory,z),"w")assert(O,"Could not create "..z)
+local I=q:getChannel("include")local N,S do local R=O.writeLine local D=q:getChannel("write")local L=D.publish S=function(U,C)if
+L(D,{},self,C,U,_)then R(U)end end
+N={write=S,path=z}end
+q:getChannel("start"):publish({},self,N,_)if _.header~=false then S(x)end local H={}
+for R in self:Iterate()do local D=R.path
+local L=fs.open(fs.combine(E,D),"r")
+assert(L,"File "..D.." does not exist")local U=L.readAll()L.close()local C,M=I:publish({},self,D,U,_)
+if not C then
+O.close()error(M[#M-1]or"Unknown error")end a.Verbose("Adding "..D)local F=R.name
+if R.__isMain then
+S(U,R.alias or R.path)elseif F then local W,Y=j..'(function()','end)'
+if R.noWrap then W,Y='(function()','end)()'end local P=F..'='..W if not R.shouldExport then P="local "..P elseif not T then H[#H+1]=F
+P="local "..P end S(P)S(U,F)S(Y)else
+local W=not R.noWrap if W then S("do")end S(U,R.alias or R.path)
+if W then S('end')end end end if T then local R={}
+for D,L in ipairs(H)do R[#R+1]=L.."="..L..", "end
+S("return {"..table.concat(R).."}")end
+q:getChannel("end"):publish({},self,N,_)O.close()end
+function r.Runner:Combine(z,_,E,T)return
+self:InjectTask(h.Factory(z,T,function(A)_:Combiner(E,A)end,h.OptionTask)):Description(
+"Combines files into '"..E.."'"):Produces(E)end end
+do
+function r.Runner:ListTasks(q,j)local x={}local z=0
+for _,E in pairs(self.tasks)do local T=_:sub(1,1)
+if j or
+(T~="_"and T~=".")then local A=E.description or""local O=#_ if O>z then z=O end x[_]=A end end z=z+2 q=q or""for _,E in pairs(x)do a.WriteColor(colors.white,q.._)
+a.PrintColor(colors.lightGray,string.rep(" ",
+z-#_)..E)end return self end
+function r.Runner:Clean(q,j,x)
+return
+self:AddTask(q,x,function()
+a.Verbose("Emptying directory '"..j.."'")
+fs.delete(fs.combine(n.CurrentDirectory,j))end):Description(
+"Clean the '"..j.."' directory")end end
+local l=e(function()createLookup=a.CreateLookup
+WhiteChars=createLookup{' ','\n','\t','\r'}
+EscapeLookup={['\r']='\\r',['\n']='\\n',['\t']='\\t',['"']='\\"',["'"]="\\'"}
+LowerChars=createLookup{'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'}
+UpperChars=createLookup{'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'}
+Digits=createLookup{'0','1','2','3','4','5','6','7','8','9'}
+HexDigits=createLookup{'0','1','2','3','4','5','6','7','8','9','A','a','B','b','C','c','D','d','E','e','F','f'}
+Symbols=createLookup{'+','-','*','/','^','%',',','{','}','[',']','(',')',';','#'}
+Keywords=createLookup{'and','break','do','else','elseif','end','false','for','function','goto','if','in','local','nil','not','or','repeat','return','then','true','until','while'}
+StatListCloseKeywords=createLookup{'end','else','elseif','until'}UnOps=createLookup{'-','not','#'}end)
+local u=e(function()local q=l.Keywords local j={}
+function j:AddLocal(z)table.insert(self.Locals,z)end
+function j:CreateLocal(z)local _=self:GetLocal(z)if _ then return _ end
+_={Scope=self,Name=z,IsGlobal=false,CanRename=true,References=1}self:AddLocal(_)return _ end function j:GetLocal(z)
+for _,E in pairs(self.Locals)do if E.Name==z then return E end end
+if self.Parent then return self.Parent:GetLocal(z)end end function j:GetOldLocal(z)if
+self.oldLocalNamesMap[z]then return self.oldLocalNamesMap[z]end return
+self:GetLocal(z)end
+function j:RenameLocal(z,_)z=
+type(z)=='string'and z or z.Name local E=false
+local T=self:GetLocal(z)
+if T then T.Name=_ self.oldLocalNamesMap[z]=T E=true end
+if not E and self.Parent then self.Parent:RenameLocal(z,_)end end
+function j:AddGlobal(z)table.insert(self.Globals,z)end
+function j:CreateGlobal(z)local _=self:GetGlobal(z)if _ then return _ end
+_={Scope=self,Name=z,IsGlobal=true,CanRename=true,References=1}self:AddGlobal(_)return _ end function j:GetGlobal(z)
+for _,E in pairs(self.Globals)do if E.Name==z then return E end end
+if self.Parent then return self.Parent:GetGlobal(z)end end
+function j:GetOldGlobal(z)
+if
+self.oldGlobalNamesMap[z]then return self.oldGlobalNamesMap[z]end return self:GetGlobal(z)end
+function j:RenameGlobal(z,_)z=type(z)=='string'and z or z.Name
+local E=false local T=self:GetGlobal(z)if T then T.Name=_
+self.oldGlobalNamesMap[z]=T E=true end if not E and self.Parent then
+self.Parent:RenameGlobal(z,_)end end function j:GetVariable(z)
+return self:GetLocal(z)or self:GetGlobal(z)end
+function j:GetOldVariable(z)return self:GetOldLocal(z)or
+self:GetOldGlobal(z)end
+function j:RenameVariable(z,_)
+z=type(z)=='string'and z or z.Name if self:GetLocal(z)then self:RenameLocal(z,_)else
+self:RenameGlobal(z,_)end end function j:GetAllVariables()
+return self:getVars(true,self:getVars(true))end
+function j:getVars(z,_)local _=_ or{}
+if z then for E,T in
+pairs(self.Children)do T:getVars(true,_)end else for E,T in pairs(self.Locals)do
+table.insert(_,T)end
+for E,T in pairs(self.Globals)do table.insert(_,T)end
+if self.Parent then self.Parent:getVars(false,_)end end return _ end
+function j:ObfuscateLocals(z)
+local _=z or"etaoinshrdlucmfwypvbgkqjxz_ETAOINSHRDLUCMFWYPVBGKQJXZ"
+local E=z or"etaoinshrdlucmfwypvbgkqjxz_0123456789ETAOINSHRDLUCMFWYPVBGKQJXZ"local T,A=#_,#E local O=0 local I=math.floor
+for N,S in pairs(self.Locals)do local H
+repeat
+if O<T then O=O+1
+H=_:sub(O,O)else
+if O<T then O=O+1 H=_:sub(O,O)else local R=I(O/T)local D=O%T H=_:sub(D,D)while R>0 do D=R%A H=
+E:sub(D,D)..H R=I(R/A)end O=O+1 end end until not(q[H]or self:GetVariable(H))self:RenameLocal(S.Name,H)end end function j:ToString()return'<Scope>'end
+local function x(z)
+local _=setmetatable({Parent=z,Locals={},Globals={},oldLocalNamesMap={},oldGlobalNamesMap={},Children={}},{__index=j})if z then table.insert(z.Children,_)end return _ end return x end)
+local c=e(function()local q={}function q:Peek(j)local x=self.tokens j=j or 0 return
+x[math.min(#x,self.pointer+j)]end
+function q:Get(j)
+local x=self.tokens local z=self.pointer local _=x[z]self.pointer=math.min(z+1,#x)if j then
+table.insert(j,_)end return _ end function q:Is(j)return self:Peek().Type==j end function q:Save()
+table.insert(self.savedPointers,self.pointer)end
+function q:Commit()local j=self.savedPointers j[#j]=nil end
+function q:Restore()local j=self.savedPointers local x=#j self.pointer=savedP[x]j[x]=nil end
+function q:ConsumeSymbol(j,x)local z=self:Peek()
+if z.Type=='Symbol'then
+if j then if z.Data==j then self:Get(x)
+return true else return nil end else self:Get(x)return z end else return nil end end
+function q:ConsumeKeyword(j,x)local z=self:Peek()if z.Type=='Keyword'and z.Data==j then
+self:Get(x)return true else return nil end end function q:IsKeyword(j)local x=self:Peek()
+return x.Type=='Keyword'and x.Data==j end
+function q:IsSymbol(j)local x=self:Peek()return x.Type==
+'Symbol'and x.Data==j end
+function q:IsEof()return self:Peek().Type=='Eof'end
+function q:Print(j)j=(j==nil and true or j)local x=""
+for z,_ in
+ipairs(self.tokens)do if j then
+for z,E in ipairs(_.LeadingWhite)do x=x..E:Print().."\n"end end x=x.._:Print().."\n"end return x end return q end)
+local m=e(function()local q=a.CreateLookup local j=l.LowerChars local x=l.UpperChars local z=l.Digits
+local _=l.Symbols local E=l.HexDigits local T=l.Keywords local A=l.StatListCloseKeywords local O=l.UnOps
+local I=setmetatable local N={}
+function N:Print()return
+"<".. (self.Type..
+string.rep(' ',math.max(3,12-#self.Type))).."  "..
+(self.Data or'').." >"end local S={__index=N}
+local function H(D)local L={}
+do local C=1 local M=1 local F=1 local function W()local G=D:sub(C,C)
+if G=='\n'then F=1 M=M+1 else F=F+1 end C=C+1 return G end local function Y(G)G=G or 0 return
+D:sub(C+G,C+G)end local function P(G)local K=Y()for i=1,#G do
+if K==G:sub(i,i)then return W()end end end local function V(G)
+error(">> :"..M..
+":"..F..": "..G,0)end
+local function B()local G=C
+if Y()=='['then local K=0 local Q=1
+while Y(K+1)=='='do K=K+1 end
+if Y(K+1)=='['then for _=0,K+1 do W()end local J=C
+while true do if Y()==''then
+V("Expected `]"..string.rep('=',K)..
+"]` near <eof>.",3)end local ee=true
+if Y()==']'then for i=1,K do
+if Y(i)~='='then ee=false end end if Y(K+1)~=']'then ee=false end else
+if Y()=='['then local et=true for i=1,K
+do if Y(i)~='='then et=false break end end if
+Y(K+1)=='['and et then Q=Q+1 for i=1,(K+2)do W()end end end ee=false end
+if ee then Q=Q-1 if Q==0 then break else for i=1,K+2 do W()end end else W()end end local X=D:sub(J,C-1)for i=0,K+1 do W()end local Z=D:sub(G,C-1)return X,Z else return nil end else return nil end end
+while true do local G={}local K=''local Q=false
+while true do local ea=Y()
+if ea=='#'and Y(1)=='!'and M==1 then
+W()W()K="#!"while Y()~='\n'and Y()~=''do K=K..W()end
+table.insert(G,I({Type='Comment',CommentType='Shebang',Data=K,Line=M,Char=F},S))K=""end
+if ea==' 'or ea=='\t'then local eo=W()
+table.insert(G,I({Type='Whitespace',Line=M,Char=F,Data=eo},S))elseif ea=='\n'or ea=='\r'then local eo=W()if K~=""then
+table.insert(G,I({Type='Comment',CommentType=Q and'LongComment'or'Comment',Data=K,Line=M,Char=F},S))K=""end
+table.insert(G,I({Type='Whitespace',Line=M,Char=F,Data=eo},S))elseif ea=='-'and Y(1)=='-'then W()W()K=K..'--'local eo,ei=B()
+if ei then K=K..ei Q=true else while
+Y()~='\n'and Y()~=''do K=K..W()end end else break end end if K~=""then
+table.insert(G,I({Type='Comment',CommentType=Q and'LongComment'or'Comment',Data=K,Line=M,Char=F},S))end local J=M local X=F local Z=":"..M..":"..
+F..":> "local ee=Y()local et=nil
+if ee==''then
+et={Type='Eof'}elseif x[ee]or j[ee]or ee=='_'then local ea=C
+repeat W()ee=Y()until not(
+x[ee]or j[ee]or z[ee]or ee=='_')local eo=D:sub(ea,C-1)if T[eo]then et={Type='Keyword',Data=eo}else
+et={Type='Ident',Data=eo}end elseif
+z[ee]or(Y()=='.'and z[Y(1)])then local ea=C
+if ee=='0'and Y(1)=='x'then W()W()while E[Y()]do W()end if P('Pp')then P('+-')while
+z[Y()]do W()end end else while z[Y()]do W()end if P('.')then
+while z[Y()]do W()end end
+if P('Ee')then P('+-')while z[Y()]do W()end end end et={Type='Number',Data=D:sub(ea,C-1)}elseif
+ee=='\''or ee=='\"'then local ea=C local eo=W()local ei=C
+while true do local ee=W()if ee=='\\'then W()elseif ee==eo then break elseif ee==''then
+V("Unfinished string near <eof>")end end local en=D:sub(ei,C-2)local es=D:sub(ea,C-1)
+et={Type='String',Data=es,Constant=en}elseif ee=='['then local ea,eo=B()if eo then et={Type='String',Data=eo,Constant=ea}else W()
+et={Type='Symbol',Data='['}end elseif P('>=<')then if P('=')then
+et={Type='Symbol',Data=ee..'='}else et={Type='Symbol',Data=ee}end elseif P('~')then if
+P('=')then et={Type='Symbol',Data='~='}else
+V("Unexpected symbol `~` in source.",2)end elseif P('.')then if P('.')then if P('.')then
+et={Type='Symbol',Data='...'}else et={Type='Symbol',Data='..'}end else
+et={Type='Symbol',Data='.'}end elseif P(':')then if P(':')then
+et={Type='Symbol',Data='::'}else et={Type='Symbol',Data=':'}end elseif _[ee]then
+W()et={Type='Symbol',Data=ee}else local ea,eo=B()if ea then
+et={Type='String',Data=eo,Constant=ea}else
+V("Unexpected Symbol `"..ee.."` in source.",2)end end et.LeadingWhite=G et.Line=J et.Char=X L[#L+1]=I(et,S)
+if et.Type=='Eof'then break end end end
+local U=setmetatable({tokens=L,savedPointers={},pointer=1},{__index=c})return U end
+local function R(D)
+local function L(G)
+local K=">> :"..D:Peek().Line..
+":"..D:Peek().Char..": "..G.."\n"local Q=0
+if type(src)=='string'then
+for J in src:gmatch("[^\n]*\n?")do if J:sub(-1,-1)=='\n'then J=J:sub(1,
+-2)end Q=Q+1
+if Q==D:Peek().Line then K=K..">> `"..
+J:gsub('\t','    ').."`\n"
+for i=1,D:Peek().Char
+do local X=J:sub(i,i)if X=='\t'then K=K..'    'else K=K..' 'end end K=K.."   ^^^^"break end end end error(K)end local U,C,M,F,W
+local function Y(G,K)local Q=u(G)if not D:ConsumeSymbol('(',K)then
+L("`(` expected.")end local J={}local X=false
+while
+not D:ConsumeSymbol(')',K)do
+if D:Is('Ident')then local ee=Q:CreateLocal(D:Get(K).Data)
+J[#J+1]=ee
+if not D:ConsumeSymbol(',',K)then if D:ConsumeSymbol(')',K)then break else
+L("`)` expected.")end end elseif D:ConsumeSymbol('...',K)then X=true if not D:ConsumeSymbol(')',K)then
+L("`...` must be the last argument of a function.")end break else
+L("Argument name or `...` expected")end end local Z=C(Q)if not D:ConsumeKeyword('end',K)then
+L("`end` expected after function body")end return
+{AstType='Function',Scope=Q,Arguments=J,Body=Z,VarArg=X,Tokens=K}end
+function F(G)local K={}
+if D:ConsumeSymbol('(',K)then local Q=U(G)if not D:ConsumeSymbol(')',K)then
+L("`)` Expected.")end
+return{AstType='Parentheses',Inner=Q,Tokens=K}elseif D:Is('Ident')then local Q=D:Get(K)local J=G:GetLocal(Q.Data)
+if not J then
+J=G:GetGlobal(Q.Data)
+if not J then J=G:CreateGlobal(Q.Data)else J.References=J.References+1 end else J.References=J.References+1 end return{AstType='VarExpr',Name=Q.Data,Variable=J,Tokens=K}else
+L("primary expression expected")end end
+function W(G,K)local Q=F(G)
+while true do local J={}
+if D:IsSymbol('.')or D:IsSymbol(':')then
+local X=D:Get(J).Data
+if not D:Is('Ident')then L("<Ident> expected.")end local Z=D:Get(J)
+Q={AstType='MemberExpr',Base=Q,Indexer=X,Ident=Z,Tokens=J}elseif not K and D:ConsumeSymbol('[',J)then local X=U(G)if
+not D:ConsumeSymbol(']',J)then L("`]` expected.")end
+Q={AstType='IndexExpr',Base=Q,Index=X,Tokens=J}elseif not K and D:ConsumeSymbol('(',J)then local X={}
+while
+not D:ConsumeSymbol(')',J)do X[#X+1]=U(G)
+if not D:ConsumeSymbol(',',J)then if D:ConsumeSymbol(')',J)then break else
+L("`)` Expected.")end end end Q={AstType='CallExpr',Base=Q,Arguments=X,Tokens=J}elseif
+not K and D:Is('String')then
+Q={AstType='StringCallExpr',Base=Q,Arguments={D:Get(J)},Tokens=J}elseif not K and D:IsSymbol('{')then local X=M(G)
+Q={AstType='TableCallExpr',Base=Q,Arguments={X},Tokens=J}else break end end return Q end
+function M(G)local K={}
+if D:Is('Number')then
+return{AstType='NumberExpr',Value=D:Get(K),Tokens=K}elseif D:Is('String')then
+return{AstType='StringExpr',Value=D:Get(K),Tokens=K}elseif D:ConsumeKeyword('nil',K)then return{AstType='NilExpr',Tokens=K}elseif
+D:IsKeyword('false')or D:IsKeyword('true')then return
+{AstType='BooleanExpr',Value=(D:Get(K).Data=='true'),Tokens=K}elseif D:ConsumeSymbol('...',K)then return
+{AstType='DotsExpr',Tokens=K}elseif D:ConsumeSymbol('{',K)then local Q={}
+local J={AstType='ConstructorExpr',EntryList=Q,Tokens=K}
+while true do
+if D:IsSymbol('[',K)then D:Get(K)local X=U(G)if not D:ConsumeSymbol(']',K)then
+L("`]` Expected")end if not D:ConsumeSymbol('=',K)then
+L("`=` Expected")end local Z=U(G)
+Q[#Q+1]={Type='Key',Key=X,Value=Z}elseif D:Is('Ident')then local X=D:Peek(1)
+if X.Type=='Symbol'and X.Data=='='then
+local Z=D:Get(K)
+if not D:ConsumeSymbol('=',K)then L("`=` Expected")end local ee=U(G)Q[#Q+1]={Type='KeyString',Key=Z.Data,Value=ee}else
+local Z=U(G)Q[#Q+1]={Type='Value',Value=Z}end elseif D:ConsumeSymbol('}',K)then break else local X=U(G)Q[#Q+1]={Type='Value',Value=X}end
+if D:ConsumeSymbol(';',K)or D:ConsumeSymbol(',',K)then elseif
+D:ConsumeSymbol('}',K)then break else L("`}` or table entry Expected")end end return J elseif D:ConsumeKeyword('function',K)then local Q=Y(G,K)Q.IsLocal=true return Q else return W(G)end end local P=8
+local V={['+']={6,6},['-']={6,6},['%']={7,7},['/']={7,7},['*']={7,7},['^']={10,9},['..']={5,4},['==']={3,3},['<']={3,3},['<=']={3,3},['~=']={3,3},['>']={3,3},['>=']={3,3},['and']={2,2},['or']={1,1}}
+function U(G,K)K=K or 0 local Q
+if O[D:Peek().Data]then local J={}local X=D:Get(J).Data Q=U(G,P)
+local Z={AstType='UnopExpr',Rhs=Q,Op=X,OperatorPrecedence=P,Tokens=J}Q=Z else Q=M(G)end
+while true do local J=V[D:Peek().Data]
+if J and J[1]>K then local X={}
+local Z=D:Get(X).Data local ee=U(G,J[2])
+local et={AstType='BinopExpr',Lhs=Q,Op=Z,OperatorPrecedence=J[1],Rhs=ee,Tokens=X}Q=et else break end end return Q end
+local function B(G)local K=nil local Q={}
+if D:ConsumeKeyword('if',Q)then local J={}
+local X={AstType='IfStatement',Clauses=J}
+repeat local Z=U(G)if not D:ConsumeKeyword('then',Q)then
+L("`then` expected.")end local ee=C(G)J[#J+1]={Condition=Z,Body=ee}until not
+D:ConsumeKeyword('elseif',Q)
+if D:ConsumeKeyword('else',Q)then local Z=C(G)J[#J+1]={Body=Z}end
+if not D:ConsumeKeyword('end',Q)then L("`end` expected.")end X.Tokens=Q K=X elseif D:ConsumeKeyword('while',Q)then local J=U(G)if
+not D:ConsumeKeyword('do',Q)then return L("`do` expected.")end local X=C(G)if not
+D:ConsumeKeyword('end',Q)then L("`end` expected.")end
+K={AstType='WhileStatement',Condition=J,Body=X,Tokens=Q}elseif D:ConsumeKeyword('do',Q)then local J=C(G)if not D:ConsumeKeyword('end',Q)then
+L("`end` expected.")end
+K={AstType='DoStatement',Body=J,Tokens=Q}elseif D:ConsumeKeyword('for',Q)then if not D:Is('Ident')then
+L("<ident> expected.")end local J=D:Get(Q)
+if D:ConsumeSymbol('=',Q)then local X=u(G)
+local Z=X:CreateLocal(J.Data)local ee=U(G)
+if not D:ConsumeSymbol(',',Q)then L("`,` Expected")end local et=U(G)local ea if D:ConsumeSymbol(',',Q)then ea=U(G)end if not
+D:ConsumeKeyword('do',Q)then L("`do` expected")end
+local eo=C(X)
+if not D:ConsumeKeyword('end',Q)then L("`end` expected")end
+K={AstType='NumericForStatement',Scope=X,Variable=Z,Start=ee,End=et,Step=ea,Body=eo,Tokens=Q}else local X=u(G)local Z={X:CreateLocal(J.Data)}
+while
+D:ConsumeSymbol(',',Q)do
+if not D:Is('Ident')then L("for variable expected.")end Z[#Z+1]=X:CreateLocal(D:Get(Q).Data)end
+if not D:ConsumeKeyword('in',Q)then L("`in` expected.")end local ee={U(G)}
+while D:ConsumeSymbol(',',Q)do ee[#ee+1]=U(G)end
+if not D:ConsumeKeyword('do',Q)then L("`do` expected.")end local et=C(X)if not D:ConsumeKeyword('end',Q)then
+L("`end` expected.")end
+K={AstType='GenericForStatement',Scope=X,VariableList=Z,Generators=ee,Body=et,Tokens=Q}end elseif D:ConsumeKeyword('repeat',Q)then local J=C(G)if
+not D:ConsumeKeyword('until',Q)then L("`until` expected.")end
+cond=U(J.Scope)K={AstType='RepeatStatement',Condition=cond,Body=J,Tokens=Q}elseif
+D:ConsumeKeyword('function',Q)then
+if not D:Is('Ident')then L("Function name expected")end local J=W(G,true)local X=Y(G,Q)X.IsLocal=false X.Name=J K=X elseif
+D:ConsumeKeyword('local',Q)then
+if D:Is('Ident')then local J={D:Get(Q).Data}
+while D:ConsumeSymbol(',',Q)do
+if not
+D:Is('Ident')then L("local var name expected")end J[#J+1]=D:Get(Q).Data end local X={}if D:ConsumeSymbol('=',Q)then repeat X[#X+1]=U(G)until
+not D:ConsumeSymbol(',',Q)end for Z,ee in pairs(J)do
+J[Z]=G:CreateLocal(ee)end
+K={AstType='LocalStatement',LocalList=J,InitList=X,Tokens=Q}elseif D:ConsumeKeyword('function',Q)then if not D:Is('Ident')then
+L("Function name expected")end local J=D:Get(Q).Data
+local X=G:CreateLocal(J)local Z=Y(G,Q)Z.Name=X Z.IsLocal=true K=Z else
+L("local var or function def expected")end elseif D:ConsumeSymbol('::',Q)then if not D:Is('Ident')then
+L('Label name expected')end local J=D:Get(Q).Data if
+not D:ConsumeSymbol('::',Q)then L("`::` expected")end
+K={AstType='LabelStatement',Label=J,Tokens=Q}elseif D:ConsumeKeyword('return',Q)then local J={}if not D:IsKeyword('end')then
+local X,Z=pcall(function()return U(G)end)
+if X then J[1]=Z while D:ConsumeSymbol(',',Q)do J[#J+1]=U(G)end end end
+K={AstType='ReturnStatement',Arguments=J,Tokens=Q}elseif D:ConsumeKeyword('break',Q)then K={AstType='BreakStatement',Tokens=Q}elseif
+D:ConsumeKeyword('goto',Q)then if not D:Is('Ident')then L("Label expected")end
+local J=D:Get(Q).Data K={AstType='GotoStatement',Label=J,Tokens=Q}else local J=W(G)
+if
+D:IsSymbol(',')or D:IsSymbol('=')then if(J.ParenCount or 0)>0 then
+L("Can not assign to parenthesized expression, is not an lvalue")end local X={J}while
+D:ConsumeSymbol(',',Q)do X[#X+1]=W(G)end if not D:ConsumeSymbol('=',Q)then
+L("`=` Expected.")end local Z={U(G)}while D:ConsumeSymbol(',',Q)do
+Z[#Z+1]=U(G)end
+K={AstType='AssignmentStatement',Lhs=X,Rhs=Z,Tokens=Q}elseif J.AstType=='CallExpr'or J.AstType=='TableCallExpr'or
+J.AstType=='StringCallExpr'then
+K={AstType='CallStatement',Expression=J,Tokens=Q}else L("Assignment Statement Expected")end end
+if D:IsSymbol(';')then K.Semicolon=D:Get(K.Tokens)end return K end
+function C(G)local K={}local Q={Scope=u(G),AstType='Statlist',Body=K,Tokens={}}
+while not
+A[D:Peek().Data]and not D:IsEof()do local J=B(Q.Scope)K[#K+1]=J end
+if D:IsEof()then local J={}J.AstType='Eof'J.Tokens={D:Get()}K[#K+1]=J end return Q end return C(u())end return{LexLua=H,ParseLua=R}end)
+local f=e(function()local q=l.LowerChars local j=l.UpperChars local x=l.Digits local z=l.Symbols
+local function _(N,S,H)H=H or' '
+local R,D=N:sub(-1,-1),S:sub(1,1)
+if j[R]or q[R]or R=='_'then
+if not
+(D=='_'or j[D]or q[D]or x[D])then return N..S else return N..H..S end elseif x[R]then
+if D=='('then return N..S elseif z[D]then return N..S else return N..H..S end elseif R==''then return N..S else if D=='('then return N..H..S else return N..S end end end
+local function E(N)local S,H local R=0 local function D(U,C,M)
+if R>150 then R=0 return U.."\n"..C else return _(U,C,sep)end end
+H=function(U,C)local C=C or 0 local M=0 local F=false
+local W=""
+if U.AstType=='VarExpr'then
+if U.Variable then W=W..U.Variable.Name else W=W..U.Name end elseif U.AstType=='NumberExpr'then W=W..U.Value.Data elseif U.AstType=='StringExpr'then W=W..
+U.Value.Data elseif U.AstType=='BooleanExpr'then
+W=W..tostring(U.Value)elseif U.AstType=='NilExpr'then W=D(W,"nil")elseif U.AstType=='BinopExpr'then
+M=U.OperatorPrecedence W=D(W,H(U.Lhs,M))W=D(W,U.Op)W=D(W,H(U.Rhs))if U.Op=='^'or U.Op==
+'..'then M=M-1 end if M<C then F=false else F=true end elseif
+U.AstType=='UnopExpr'then W=D(W,U.Op)W=D(W,H(U.Rhs))elseif U.AstType=='DotsExpr'then W=W..
+"..."elseif U.AstType=='CallExpr'then W=W..H(U.Base)W=W.."("for i=1,#U.Arguments do W=
+W..H(U.Arguments[i])
+if i~=#U.Arguments then W=W..","end end W=W..")"elseif
+U.AstType=='TableCallExpr'then W=W..H(U.Base)W=W..H(U.Arguments[1])elseif U.AstType==
+'StringCallExpr'then W=W..H(U.Base)
+W=W..U.Arguments[1].Data elseif U.AstType=='IndexExpr'then W=W..
+H(U.Base).."["..H(U.Index).."]"elseif U.AstType=='MemberExpr'then W=W..H(U.Base)..U.Indexer..
+U.Ident.Data elseif U.AstType==
+'Function'then U.Scope:ObfuscateLocals()W=W.."function("
+if#
+U.Arguments>0 then for i=1,#U.Arguments do W=W..U.Arguments[i].Name
+if i~=#
+U.Arguments then W=W..","elseif U.VarArg then W=W..",..."end end elseif U.VarArg then
+W=W.."..."end W=W..")"W=D(W,S(U.Body))W=D(W,"end")elseif
+U.AstType=='ConstructorExpr'then W=W.."{"
+for i=1,#U.EntryList do local Y=U.EntryList[i]
+if Y.Type=='Key'then W=W.."["..H(Y.Key).."]="..
+H(Y.Value)elseif
+Y.Type=='Value'then W=W..H(Y.Value)elseif Y.Type=='KeyString'then W=W..Y.Key..
+"="..H(Y.Value)end if i~=#U.EntryList then W=W..","end end W=W.."}"elseif U.AstType=='Parentheses'then
+W=W.."("..H(U.Inner)..")"end if not F then
+W=string.rep('(',U.ParenCount or 0)..W
+W=W..string.rep(')',U.ParenCount or 0)end R=R+#W return W end
+local L=function(U)local C=''
+if U.AstType=='AssignmentStatement'then for i=1,#U.Lhs do C=C..H(U.Lhs[i])if i~=#
+U.Lhs then C=C..","end end
+if
+#U.Rhs>0 then C=C.."="for i=1,#U.Rhs do C=C..H(U.Rhs[i])
+if i~=#U.Rhs then C=C..","end end end elseif U.AstType=='CallStatement'then C=H(U.Expression)elseif
+U.AstType=='LocalStatement'then C=C.."local "
+for i=1,#U.LocalList do
+C=C..U.LocalList[i].Name if i~=#U.LocalList then C=C..","end end if#U.InitList>0 then C=C.."="
+for i=1,#U.InitList do
+C=C..H(U.InitList[i])if i~=#U.InitList then C=C..","end end end elseif
+U.AstType=='IfStatement'then C=D("if",H(U.Clauses[1].Condition))
+C=D(C,"then")C=D(C,S(U.Clauses[1].Body))
+for i=2,#U.Clauses do
+local M=U.Clauses[i]if M.Condition then C=D(C,"elseif")C=D(C,H(M.Condition))
+C=D(C,"then")else C=D(C,"else")end
+C=D(C,S(M.Body))end C=D(C,"end")elseif U.AstType=='WhileStatement'then
+C=D("while",H(U.Condition))C=D(C,"do")C=D(C,S(U.Body))C=D(C,"end")elseif
+U.AstType=='DoStatement'then C=D(C,"do")C=D(C,S(U.Body))C=D(C,"end")elseif
+U.AstType=='ReturnStatement'then C="return"
+for i=1,#U.Arguments do C=D(C,H(U.Arguments[i]))if i~=#
+U.Arguments then C=C..","end end elseif U.AstType=='BreakStatement'then C="break"elseif U.AstType=='RepeatStatement'then C="repeat"
+C=D(C,S(U.Body))C=D(C,"until")C=D(C,H(U.Condition))elseif U.AstType=='Function'then
+U.Scope:ObfuscateLocals()if U.IsLocal then C="local"end C=D(C,"function ")if U.IsLocal then
+C=C..U.Name.Name else C=C..H(U.Name)end C=C.."("
+if
+#U.Arguments>0 then
+for i=1,#U.Arguments do C=C..U.Arguments[i].Name if
+i~=#U.Arguments then C=C..","elseif U.VarArg then C=C..",..."end end elseif U.VarArg then C=C.."..."end C=C..")"C=D(C,S(U.Body))C=D(C,"end")elseif
+U.AstType=='GenericForStatement'then U.Scope:ObfuscateLocals()C="for "for i=1,#U.VariableList do C=C..
+U.VariableList[i].Name
+if i~=#U.VariableList then C=C..","end end C=C.." in"
+for i=1,#U.Generators do
+C=D(C,H(U.Generators[i]))if i~=#U.Generators then C=D(C,',')end end C=D(C,"do")C=D(C,S(U.Body))C=D(C,"end")elseif
+U.AstType=='NumericForStatement'then C="for "C=C..U.Variable.Name.."="C=C..H(U.Start)..","..
+H(U.End)if U.Step then
+C=C..","..H(U.Step)end C=D(C,"do")C=D(C,S(U.Body))C=D(C,"end")elseif
+U.AstType=='LabelStatement'then C="::"..U.Label.."::"elseif
+U.AstType=='GotoStatement'then C="goto "..U.Label elseif U.AstType=='Comment'then elseif U.AstType=='Eof'then else error("Unknown AST Type: "..
+U.AstType)end R=R+#C return C end
+S=function(U)local C=''U.Scope:ObfuscateLocals()for M,F in pairs(U.Body)do
+C=D(C,L(F),';')end return C end return S(N)end local T,A=os.queueEvent,coroutine.yield
+local function O(N)local S=m.LexLua(N)T("sleep")
+A("sleep")S=m.ParseLua(S)T("sleep")A("sleep")return E(S)end
+local function I(N,S)S=S or N local H=n.CurrentDirectory
+local R=fs.open(fs.combine(H,N),"r")local D=R.readAll()R.close()D=O(D)
+local L=fs.open(fs.combine(H,S),"w")L.write(D)L.close()end return{JoinStatements=_,Minify=E,MinifyString=O,MinifyFile=I}end)
+do local q=f.MinifyFile
+function r.Runner:Minify(j,x,z,_)
+return
+self:AddTask(j,_,function()
+if type(x)=="table"then
+assert(type(z)=="table","Output File must be a table too")local E=#x
+assert(E==#z,"Tables must be the same length")for i=1,E do q(x[i],z[i])end else q(x,z)end end):Description(
+"Minifies '"..
+fs.getName(x).."'' into '"..fs.getName(z).."'"):Requires(x):Produces(z)end
+function r.Runner:MinifyAll(j,x,z)j=j or"_minify"return
+self:AddTask(j,{},q):Description("Minifies files"):Maps(
+x or"wild:*.lua",z or"wild:*.min.lua")end
+o.Subscribe({"HowlFile","env"},function(j)j.Minify=q end)end
+local w=e(function()local q={}function q:Add(x)
+table.insert(self.include,self:_Parse(x))self.files=nil return self end function q:Remove(x)
+table.insert(self.exclude,self:_Parse(x))self.files=nil return self end
+q.Include=q.Add q.Exclude=q.Remove
+function q:Files()
+if not self.files then self.files={}
+for x,z in ipairs(self.include)do if
+z.Type=="Normal"then self:_Include(z.Text)else
+self:_Include("",z.Text)end end end return self.files end
+function q:_Include(x,z)if x~=""then
+for E,z in pairs(self.exclude)do if z.Match(x)then return end end end
+local _=fs.combine(self.path,x)
+assert(fs.exists(_),"Cannot find path "..x)if fs.isDir(_)then for E,T in ipairs(fs.list(_))do
+self:_Include(fs.combine(x,T),z)end elseif not z or z:match(x)then
+self.files[x]=true end end
+function q:_Parse(x)x=a.ParsePattern(x)local z=x.Text
+if a.Type=="Normal"then
+function x.Match(_)return z==_ end else function x.Match(_)return _:match(z)end end return x end
+local function j(x)return
+setmetatable({path=x or n.CurrentDirectory,include={},exclude={},startup='startup'},{__index=q})end
+o.Subscribe({"HowlFile","env"},function(x)x.Files=j end)return{Files=q,Factory=j}end)
+do
+local q=[=[--[[Hideously Smashed Together by Compilr, a Hideous Smash-Stuff-Togetherer, (c) 2014 oeed
+	This file REALLLLLLLY isn't suitable to be used for anything other than being executed
+	To extract all the files, run: "<filename> --extract" in the Shell
+]]
+]=]
+local j=[[
+local function run(tArgs)
+	local fnFile, err = loadstring(files[%q], %q)
+	if err then error(err) end
+
+	local function split(str, pat)
+		 local t = {}
+		 local fpat = "(.-)" .. pat
+		 local last_end = 1
+		 local s, e, cap = str:find(fpat, 1)
+		 while s do
+				if s ~= 1 or cap ~= "" then
+		 table.insert(t,cap)
+				end
+				last_end = e+1
+				s, e, cap = str:find(fpat, last_end)
+		 end
+		 if last_end <= #str then
+				cap = str:sub(last_end)
+				table.insert(t, cap)
+		 end
+		 return t
+	end
+
+	local function resolveTreeForPath(path, single)
+		local _files = files
+		local parts = split(path, '/')
+		if parts then
+			for i, v in ipairs(parts) do
+				if #v > 0 then
+					if _files[v] then
+						_files = _files[v]
+					else
+						_files = nil
+						break
+					end
+				end
+			end
+		elseif #path > 0 and path ~= '/' then
+			_files = _files[path]
+		end
+		if not single or type(_files) == 'string' then
+			return _files
+		end
+	end
+
+	local oldFs = fs
+	local env
+	env = {
+		fs = {
+			list = function(path)
+							local list = {}
+							if fs.exists(path) then
+						list = fs.list(path)
+							end
+				for k, v in pairs(resolveTreeForPath(path)) do
+					if not fs.exists(path .. '/' ..k) then
+						table.insert(list, k)
+					end
+				end
+				return list
+			end,
+
+			exists = function(path)
+				if fs.exists(path) then
+					return true
+				elseif resolveTreeForPath(path) then
+					return true
+				else
+					return false
+				end
+			end,
+
+			isDir = function(path)
+				if fs.isDir(path) then
+					return true
+				else
+					local tree = resolveTreeForPath(path)
+					if tree and type(tree) == 'table' then
+						return true
+					else
+						return false
+					end
+				end
+			end,
+
+			isReadOnly = function(path)
+				if not fs.isReadOnly(path) then
+					return false
+				else
+					return true
+				end
+			end,
+
+			getName = fs.getName,
+			getSize = fs.getSize,
+			getFreespace = fs.getFreespace,
+			makeDir = fs.makeDir,
+			move = fs.move,
+			copy = fs.copy,
+			delete = fs.delete,
+			combine = fs.combine,
+
+			open = function(path, mode)
+				if fs.exists(path) then
+					return fs.open(path, mode)
+				elseif type(resolveTreeForPath(path)) == 'string' then
+					local handle = {close = function()end}
+					if mode == 'r' then
+						local content = resolveTreeForPath(path)
+						handle.readAll = function()
+							return content
+						end
+
+						local line = 1
+						local lines = split(content, '\n')
+						handle.readLine = function()
+							if line > #lines then
+								return nil
+							else
+								return lines[line]
+							end
+							line = line + 1
+						end
+											return handle
+					else
+						error('Cannot write to read-only file (compilr archived).')
+					end
+				else
+					return fs.open(path, mode)
+				end
+			end
+		},
+
+		loadfile = function( _sFile )
+				local file = env.fs.open( _sFile, "r" )
+				if file then
+						local func, err = loadstring( file.readAll(), fs.getName( _sFile ) )
+						file.close()
+						return func, err
+				end
+				return nil, "File not found: ".._sFile
+		end,
+
+		dofile = function( _sFile )
+				local fnFile, e = env.loadfile( _sFile )
+				if fnFile then
+						setfenv( fnFile, getfenv(2) )
+						return fnFile()
+				else
+						error( e, 2 )
+				end
+		end
+	}
+
+	setmetatable( env, { __index = _G } )
+
+	local tAPIsLoading = {}
+	env.os.loadAPI = function( _sPath )
+			local sName = fs.getName( _sPath )
+			if tAPIsLoading[sName] == true then
+					printError( "API "..sName.." is already being loaded" )
+					return false
+			end
+			tAPIsLoading[sName] = true
+
+			local tEnv = {}
+			setmetatable( tEnv, { __index = env } )
+			local fnAPI, err = env.loadfile( _sPath )
+			if fnAPI then
+					setfenv( fnAPI, tEnv )
+					fnAPI()
+			else
+					printError( err )
+					tAPIsLoading[sName] = nil
+					return false
+			end
+
+			local tAPI = {}
+			for k,v in pairs( tEnv ) do
+					tAPI[k] =  v
+			end
+
+			env[sName] = tAPI
+			tAPIsLoading[sName] = nil
+			return true
+	end
+
+	env.shell = shell
+
+	setfenv( fnFile, env )
+	fnFile(unpack(tArgs))
+end
+
+local function extract()
+		local function node(path, tree)
+				if type(tree) == 'table' then
+						fs.makeDir(path)
+						for k, v in pairs(tree) do
+								node(path .. '/' .. k, v)
+						end
+				else
+						local f = fs.open(path, 'w')
+						if f then
+								f.write(tree)
+								f.close()
+						end
+				end
+		end
+		node('', files)
+end
+
+local tArgs = {...}
+if #tArgs == 1 and tArgs[1] == '--extract' then
+	extract()
+else
+	run(tArgs)
+end
+]]
+function w.Files:Compilr(x,z)local _=self.path z=z or{}local E=self:Files()if
+not E[self.startup]then
+error('You must have a file called '..self.startup..' to be executed at runtime.')end local T={}
+for I,N in pairs(E)do
+local S=fs.open(fs.combine(_,I),"r")local H=S.readAll()S.close()if z.minify and loadstring(H)then
+H=f.MinifyString(H)end local R=T
+local D={I:match((I:gsub("[^/]+/?","([^/]+)/?")))}D[#D]=nil
+for N,L in pairs(D)do local U=R[L]if not U then U={}R[L]=U end R=U end R[fs.getName(I)]=H end
+local A=q..
+"local files = "..textutils.serialize(T).."\n"..
+string.format(j,self.startup,self.startup)if z.minify then A=f.MinifyString(A)end
+local O=fs.open(fs.combine(n.CurrentDirectory,x),"w")O.write(A)O.close()end
+function r.Runner:Compilr(x,z,_,E)return
+self:AddTask(x,E,function()z:Compilr(_)end):Description("Combines multiple files using Compilr"):Produces(_)end end
+do local q,j,x,z,_,E=fs.combine,shell.resolve,fs.exists,fs.isDir,loadfile,a.Verbose
+local T=busted
+local A={"busted.api.lua","../lib/busted.api.lua","busted.api","../lib/busted.api","busted","../lib/busted"}
+local function O(H)E("Busted at "..H)local R=_(H)
+if R then
+E("Busted loading at "..H)local D=setmetatable({},{__index=getfenv()})
+setfenv(R,D)()if D.run then E("Busted found at"..H)return D end end end
+local function I(H)local R=j(H)if not x(H)then return end if not z(H)then return O(H)end local D
+for L,U in ipairs(A)do
+D=q(H,U)if x(D)then local C=O(D)if C then return C end end end end
+local function N()if T then return T end local H=I("/")if H then T=H return T end for R in
+string.gmatch(shell.path(),"[^:]+")do local H=I(R)if H then T=H return T end end end
+local function S()
+return
+{cwd=n.CurrentDirectory,output='colorTerminal',seed=os.time(),verbose=a.IsVerbose(),root='spec',tags={},['exclude-tags']={},pattern='_spec',loaders={'lua'},helper=''}end
+function r.Runner:Busted(H,R,D)
+return
+self:AddTask(H,D,function()local T
+if R and R.busted then T=I(R.busted)else T=N()end if not T then error("Cannot find busted")end local L=S()for M,F in pairs(R or
+{})do L[M]=F end local U,C=T.run(L,S())
+if U~=0 then
+a.VerboseLog(messages)error("Not all tests passed")end end):Description("Runs tests")end end local y=i.Options({...})local p=r.Factory()local v=y:Arguments()
+o.Subscribe({"ArgParse","changed"},function(y)a.IsVerbose(
+y:Get("verbose")or false)
+p.ShowTime=y:Get"time"p.Traceback=y:Get"trace"if y:Get"help"then v={"help"}end end)
+y:Option"verbose":Alias"v":Description"Print verbose output"
+y:Option"time":Alias"t":Description"Display the time taken for tasks"
+y:Option"trace":Description"Print a stack trace on errors"
+y:Option"help":Alias"?":Alias"h":Description"Print this help"local b,g=n.FindHowl()n.CurrentDirectory=g
+a.Verbose("Found HowlFile at "..fs.combine(g,b))
+p:Task"list"(function()p:ListTasks()end):Description"Lists all the tasks"
+p:Task"help"(function()a.Print("Howl [options] [task]")
+a.PrintColor(colors.orange,"Tasks:")p:ListTasks("  ")
+a.PrintColor(colors.orange,"\nOptions:")y:Help("  ")end):Description"Print out a detailed usage for Howl"
+p:Default(function()a.PrintError("No default task exists.")
+a.Verbose("Use 'Tasks:Default' to define a default task")a.PrintColor(colors.orange,"Choose from: ")
+p:ListTasks("  ")end)
+local k=n.SetupEnvironment({CurrentDirectory=g,Tasks=p,Options=y,Verbose=a.Verbose,Log=a.VerboseLog,File=function(...)return fs.combine(g,...)end})k.dofile(fs.combine(g,b))p:RunMany(v)
