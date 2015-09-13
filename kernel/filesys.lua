@@ -51,8 +51,8 @@ local fsFunctions = {
 	getSize 		= { FS_ARG_PATH };
 	getFreeSpace 	= { FS_ARG_PATH };
 	makeDir 		= { FS_ARG_PATH };
-	move 			= { FS_ARG_PATH, FS_ARG_PATH };
-	copy			= { FS_ARG_PATH, FS_ARG_PATH };
+	move 			= { FS_ARG_PATH, FS_ARG_OTHER };
+	copy			= { FS_ARG_PATH, FS_ARG_OTHER };
 	delete			= { FS_ARG_PATH };
 	combine			= { FS_ARG_PATH, FS_ARG_PATH };
 	open			= { FS_ARG_PATH, FS_ARG_OTHER };
@@ -157,11 +157,15 @@ function DirMount:makeDir(path)
 end
 
 function DirMount:move(from, to)
-	return _fs.move(self:Resolve(from), self:Resolve(to))
+	local drive = System.Path.GetDriveAndPath(to)
+	local mount = mounts[drive]
+	return _fs.move(self:Resolve(from), mount:Resolve(to))
 end
 
 function DirMount:copy(from, to)
-	return _fs.copy(self:Resolve(from), self:Resolve(to))
+	local drive = System.Path.GetDriveAndPath(to)
+	local mount = mounts[drive]
+	return _fs.copy(self:Resolve(from), mount:Resolve(to))
 end
 
 function DirMount:delete(path)
