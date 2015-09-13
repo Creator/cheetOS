@@ -6,7 +6,9 @@ local registryEntry = {
 	BackgroundColour = "black",
 
 	ActiveTextColour = "white",
-	ActiveBackgroundColour = "grey"
+	ActiveBackgroundColour = "grey",
+
+	InputChar = "$"
 }
 
 -- Make sure the shell keys exist
@@ -55,13 +57,15 @@ local function runShell()
 		shell.setDir(workingDir)
 	end
 
+	local inputChar = System.Registry.Get("Shell/InputChar")
+
 	local history = {}
 
 	while true do
 		local ok, err = pcall(function()
 			setColours(textColour, activeBackgroundColour)
 			term.clearLine()
-			write(shell.dir() .. "$ ")
+			write(shell.dir() .. inputChar .. " ")
 
 			setColours(activeTextColour, activeBackgroundColour)
 			local input = read(nil, history)

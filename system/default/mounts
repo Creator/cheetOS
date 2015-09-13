@@ -1,0 +1,12 @@
+do
+  for _,v in pairs(System.File.GetMounts()) do
+    local type = getmetatable(v).__type
+    write("-> " .. v:GetLetter() .. " (" .. type)
+
+    if type == "DirMount" then
+      write(": " .. v:Resolve(""))
+    end
+
+    print(")")
+  end
+end

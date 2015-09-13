@@ -65,20 +65,26 @@ _G.fs = {}
 
 local Mount = {}
 Mount.__index = Mount
+Mount.__type = "unknown"
 
 setmetatable(Mount, {
 	__call = function(cls)
 		local self = setmetatable({}, Mount)
 		return self
-	end
+	end,
 })
 
 -- Mount events:
 function Mount:OnMount() end
 function Mount:OnUnmount() end
 
+function Mount:GetLetter()
+	return self.__letter
+end
+
 local DirMount = {}
 DirMount.__index = DirMount
+DirMount.__type = "DirMount"
 
 setmetatable(DirMount, {
 	__index = Mount,
@@ -226,7 +232,7 @@ local function IsDrive(letter)
 end
 
 local function GetMounts()
-	return setmetatable({}, { __index = mounts })
+	return mounts
 end
 
 do
