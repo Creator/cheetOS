@@ -24,6 +24,7 @@ local modules = {
 	{ "ShellMgr", "K:/shellmgr.lua" };
 	{ "Network", "K:/devices.lua" };
 	{ "Socket", "K:/socket.lua" };
+	{ "COPPER", "K:/copper.lua" };
 }
 
 local function loadModules(loadCallback)

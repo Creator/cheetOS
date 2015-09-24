@@ -27,15 +27,15 @@ setmetatable(NetSocket, {
   __call = function(cls, device, freq, replyFreq)
     local self = setmetatable({}, NetSocket)
     self.__frequency = freq
-    self.__replyFreq = replyFreq
+    self.__replyFreq = replyFreq or freq
 
     if device.GetType() ~= "modem" then
       error("NetSocket(): arg #1 must be a modem!!", 2)
       return
     end
 
-    device.open(freq)
-    device.open(replyFreq)
+    device.open(self.__frequency)
+    device.open(self.__replyFreq)
 
     self.__device = device
     self.__distance = -1
@@ -76,7 +76,7 @@ end
 
 function NetSocket:Receive(timeout)
   self:EnsureOpen()
-  
+
   local timerID = nil
   if timeout then
     timerID = os.startTimer(timeout)
@@ -85,13 +85,13 @@ function NetSocket:Receive(timeout)
   local _data = nil
 
   while true do
-    local e, tid, _, _, data, dist = os.pullEvent()
+    local e, side, _, _, data, dist = os.pullEvent()
 
-    if e == "modem_message" then
+    if e == "modem_message" and side == self.__device.GetName() then
       self.__distance = dist
       _data = data
       break
-    elseif e == "timer" and tid == timerID then
+    elseif e == "timer" and side == timerID then
       _data = nil
       break
     end
