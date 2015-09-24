@@ -1,0 +1,43 @@
+local netname, func = ...
+local argsStr = table.concat({ select(3, ...) }, " ") or ""
+
+local function printUsage()
+  return printError("Usage: " .. shell.getRunningProgram() .. " <device> <function> [args]")
+end
+
+if netname == nil or func == nil then
+  printUsage()
+  return
+end
+
+local args = {}
+for arg in argsStr:gmatch("[^,]+") do
+  args[#args + 1] = arg
+end
+
+local device = System.Network[netname]
+if device == nil then
+  printError("Device not found.")
+  return
+end
+
+local fargs = {}
+
+for i=1,#args do
+  local arg = args[i]
+  local strMatch = arg:match("\"(.-)\"")
+
+  if strMatch then
+    fargs[#fargs + 1] = strMatch
+  else
+    local asNum = tonumber(arg)
+    if asNum ~= nil then
+      fargs[#fargs + 1] = asNum
+    else
+      printError("Invalid argument. Did you put quotes around your strings?")
+      return
+    end
+  end
+end
+
+return device[func](unpack(fargs))
