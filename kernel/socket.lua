@@ -110,11 +110,15 @@ function NetSocket:GetDistance()
   return self.__distance
 end
 
+function NetSocket:GetCacheID()
+  return makeCacheID(self.__device, self.__frequency, self.__replyFreq)
+end
+
 function NetSocket:Close()
   self.__device.close(self.__replyFreq)
   self.__device.close(self.__frequency)
 
-  local cacheID = makeCacheID(self.__device, self.__frequency, self.__replyFreq)
+  local cacheID = self:GetCacheID()
   if socketCache[cacheID] ~= nil then
     socketCache[cacheID] = nil
   end

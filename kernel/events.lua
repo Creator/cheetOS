@@ -12,20 +12,24 @@ function Events.RegisterTranslator(event, translator)
     tbl = translators[event]
   end
 
-  tbl[#tbl + 1] = translator
+  local index = #tbl + 1
+  tbl[index] = translator
 end
 
 function Events.Translate(event, ...)
   for k,v in pairs(translators) do
     if k == event then
-      for i=1,#v do
-        local t = v[i]
-        return t(...)
+      for _,t in pairs(v) do
+        t(...)
       end
     end
   end
 
   return event, ...
+end
+
+os.pullEventRaw = function(...)
+  return coroutine.yield(...)
 end
 
 return Events

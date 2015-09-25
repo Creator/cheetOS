@@ -98,20 +98,28 @@ local function convertToTable(data)
   else
     return nil
   end
+  return tbl
+end
+
+function COPPER.MakePacketFromData(data)
+  if type(data) ~= "table" then
+    data = convertToTable(data)
+  end
+
+  if data ~= nil then
+    local pack = Packet(data)
+    if pack:ReadChars(#MAGIC_BYTES) == MAGIC_BYTES then
+      return pack
+    end
+  end
 end
 
 function Socket:ReceivePacket(timeout)
   while true do
     local data = self.__sysSock:Receive(timeout)
-    if type(data) ~= "table" then
-      data = convertToTable(data)
-    end
-
-    if data ~= nil then
-      local pack = Packet(data)
-      if pack:ReadChars(#MAGIC_BYTES) == MAGIC_BYTES then
-        return pack
-      end
+    local packet = COPPER.MakePacketFromData(data)
+    if packet ~= nil then
+      return packet
     end
   end
 end
