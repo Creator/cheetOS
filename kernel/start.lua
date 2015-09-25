@@ -15,6 +15,7 @@ local modules = {
 	{ "Path", "kernel/path.lua" };
 	{ "File", "kernel/filesys.lua" };
 
+	{ "Events", "K:/events.lua" };
 	{ "Sandbox", "K:/sandbox.lua" };
 	{ "Tasks", "K:/tasks.lua"};
 	{ "Library", "K:/library.lua" };
@@ -64,7 +65,8 @@ local function loadModules(loadCallback)
 	end
 end
 
-local function mainLoop(e, p1, p2, p3, p4, p5)
+local function mainLoop(...)
+	local e, p1, p2, p3, p4, p5 = System.Events.Translate(...)
 	System.Tasks.KeepAlive({ e, p1, p2, p3, p4, p5 })
 end
 

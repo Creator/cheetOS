@@ -5,6 +5,12 @@ local SocketLib = {
   }
 }
 
+local socketCache = {}
+
+local function makeCacheID(device, freq, replyFreq)
+  return device.GetName() .. ":" .. freq .. ":" .. (replyFreq or freq)
+end
+
 local Socket = {}
 Socket.__index = Socket
 
@@ -107,10 +113,43 @@ end
 function NetSocket:Close()
   self.__device.close(self.__replyFreq)
   self.__device.close(self.__frequency)
+
+  local cacheID = makeCacheID(self.__device, self.__frequency, self.__replyFreq)
+  if socketCache[cacheID] ~= nil then
+    socketCache[cacheID] = nil
+  end
 end
 
-function SocketLib.NewNetSocket(...)
-  return NetSocket(...)
+function SocketLib.RequestNetSocket(device, freq, replyFreq)
+  if device ~= nil then
+    local socketID = makeCacheID(device, freq, replyFreq)
+    local socket = socketCache[socketID]
+
+    if not socket then
+      socketCache[socketID] = NetSocket(device, freq, replyFreq)
+      socket = socketCache[socketID]
+    end
+
+    return socket
+  end
 end
+
+--[[function SocketLib.GetSocketCache()
+  return socketCache
+end]]
+
+function SocketLib.GetFromCacheID(cid)
+  return socketCache[cid]
+end
+
+System.Events.RegisterTranslator("modem_message", function(side, freq, replyFreq, msg, dist)
+  if side ~= nil then
+    local device = System.Network[side]
+    local sock = System.Socket.RequestNetSocket(device, freq, replyFreq)
+    sock.__distance = dist
+    os.queueEvent("socket_message", makeCacheID(device, freq, replyFreq), msg)
+    return "modem_message", side, freq, replyFreq, msg, dist
+  end
+end)
 
 return SocketLib

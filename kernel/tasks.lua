@@ -1,17 +1,5 @@
 local __replacements = {}
-
-os.pullEventRaw = function(...)
-	return coroutine.yield(...)
-end
-
-os.pullEvent = function(...)
-	local evtData = { os.pullEventRaw(...) }
-	if evtData[1] == "terminate" then
-		error()
-	end
-
-	return unpack(evtData)
-end
+local __customQueue = {}
 
 local Tasks = {
 	Signal = {
@@ -299,5 +287,16 @@ function Tasks.__replaceNative(api, name, handler)
 
 	__replacements[api][name] = handler
 end
+
+local function customPullEvent(task, ...)
+	local evtData = { os.pullEventRaw(...) }
+	if evtData[1] == "terminate" then
+		task:SendSignal(Tasks.Signal.Kill)
+	end
+
+	return unpack(evtData)
+end
+
+Tasks.__replaceNative("os", "pullEvent", customPullEvent)
 
 return Tasks

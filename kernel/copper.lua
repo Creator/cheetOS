@@ -73,7 +73,11 @@ Socket.__index = Socket
 setmetatable(Socket, {
   __call = function(cls, device, frequency, replyFreq)
     local self = setmetatable({}, Socket)
-    self.__sysSock = System.Socket.NewNetSocket(device, frequency, replyFreq)
+    if frequency == nil and replyFreq == nil then
+      self.__sysSock = device -- A socket was supplied
+    else
+      self.__sysSock = System.Socket.RequestNetSocket(device, frequency, replyFreq)
+    end
     return self
   end
 })
