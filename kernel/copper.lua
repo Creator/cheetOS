@@ -38,17 +38,18 @@ end
 function Packet:ReadNumber()
   local i = self.__readPtr
   self.__readPtr = self.__readPtr + 1
-  return self.__data[i]
+  local num = self.__data[i]
+  return num
 end
 
 function Packet:ReadString()
-  return self:ReadChars(self:ReadNumber() or 0)
+  return self:ReadChars(self:ReadNumber())
 end
 
 function Packet:ReadChars(count)
   local str = ""
   for i=1,count do
-    str = str .. string.char(self:ReadNumber() or 0)
+    str = str .. string.char(self:ReadNumber())
   end
   return str
 end
@@ -88,20 +89,22 @@ end
 
 local function convertToTable(data)
   local tbl = {}
+
   if type(data) == "string" then
     for i=1,#data do
       local c = data:sub(i, i)
-      tbl[#tbl + 1] = c
+      tbl[#tbl + 1] = c:byte()
     end
   elseif type(data) == "number" then
     tbl[#tbl + 1] = data
   else
     return nil
   end
+
   return tbl
 end
 
-function COPPER.MakePacketFromData(data)
+local function makePacketFromData(data)
   if type(data) ~= "table" then
     data = convertToTable(data)
   end
@@ -114,10 +117,12 @@ function COPPER.MakePacketFromData(data)
   end
 end
 
+COPPER.MakePacketFromData = makePacketFromData
+
 function Socket:ReceivePacket(timeout)
   while true do
     local data = self.__sysSock:Receive(timeout)
-    local packet = COPPER.MakePacketFromData(data)
+    local packet = makePacketFromData(data)
     if packet ~= nil then
       return packet
     end

@@ -83,8 +83,9 @@ do
 end
 
 local frequency = ServerConfig.User.Frequency
-local running = false
 local maxDist = ServerConfig.User.MaxAcceptedDistance
+
+local running = false
 
 local serverSocket = System.COPPER.Socket(modem, frequency)
 
@@ -99,6 +100,11 @@ local function processMessage(sock, msg, dist)
     if dist > maxDist then
       return -- ignore
     end
+  end
+
+  local packet = System.COPPER.MakePacketFromData(msg)
+  if packet ~= nil then -- Non-COPPER packets will be nil
+
   end
 end
 
