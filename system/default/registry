@@ -7,14 +7,17 @@ end
 
 do
   local commands = {
-    set = function(key, value)
+    set = function(key, ...)
       if key == nil then
         return false, "No key was specified"
       end
 
-      if value == nil then
+      local values = { ... }
+      if #values == 0 then
         return false, "No value was specified"
       end
+
+      local value = table.concat(values, " ")
 
       print("Setting " .. key .. " to " .. value)
       System.Registry.Set(key, value)

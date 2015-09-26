@@ -1,8 +1,49 @@
-local wiredLambda = function(m) return not m.isWireless() end
+local ServerConfig = {
+  Frequency = 65000,
+  ModemName = "any",
+  Name = ""
+}
 
-local modem = System.Network.GetAnyOfType("modem", wiredLambda) -- prefer wired
-if modem == nil then
-  modem = System.Network.GetAnyOfType("modem")
+System.Registry.ValidateKey("COPPERServer", ServerConfig)
+ServerConfig = System.Registry.Get("COPPERServer")
+
+local function printWarning(...)
+  term.setTextColour(term.isColour() and colours.yellow or colours.white)
+  return print("Warning: ", ...)
+end
+
+local function printError(...)
+  term.setTextColour(term.isColour() and colours.red or colours.white)
+  return print("Error: ", ...)
+end
+
+local serverName = ServerConfig.Name
+if serverName:match("^%s-$") then
+  printError("Please name your server by setting COPPERServer/Name in the registry.")
+end
+
+local modem
+
+do
+  local wiredLambda = function(m) return not m.isWireless() end
+  local modemName = ServerConfig.ModemName
+
+  if modemName:lower() == "any" then
+    modem = System.Network.GetAnyOfType("modem", wiredLambda) -- prefer wired
+            or System.Network.GetAnyOfType("modem") -- fall back to wireless
+  else
+    modem = System.Network[modemName]
+  end
+
+
+  if modem == nil then
+    printError("No suitable modem found.")
+    return
+  end
+
+  if modem.isWireless() then
+    printWarning("Consider switching to a wired network!")
+  end
 end
 
 modem.open(32)
