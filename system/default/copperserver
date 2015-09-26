@@ -1,36 +1,72 @@
 local ServerConfig = {
-  Frequency = 65000,
-  ModemName = "any",
-  Name = ""
+  User = {
+    Frequency = 65000,
+    ModemName = "any",
+    Name = "",
+    MaxAcceptedDistance = 128,
+    ServerDir = ""
+  }
 }
 
 System.Registry.ValidateKey("COPPERServer", ServerConfig)
 ServerConfig = System.Registry.Get("COPPERServer")
 
+local logFile = nil
+
+local function print(...)
+  term.setTextColour(colours.white)
+  logFile.writeLine(table.concat({ ... }))
+  return _G.print(...)
+end
+
 local function printWarning(...)
   term.setTextColour(term.isColour() and colours.yellow or colours.white)
-  return print("Warning: ", ...)
+  logFile.writeLine(table.concat({ "Warning: ", ... }))
+  return _G.print(...)
 end
 
 local function printError(...)
   term.setTextColour(term.isColour() and colours.red or colours.white)
-  return print("Error: ", ...)
+  logFile.writeLine(table.concat("Error: ", { ... }))
+  return _G.print(...)
 end
 
-local serverName = ServerConfig.Name
+local serverName = ServerConfig.User.Name
 if serverName:match("^%s-$") then
-  printError("Please name your server by setting COPPERServer/Name in the registry.")
+  printError("Please name your server by setting COPPERServer/User/Name in the registry.")
+  return
 end
 
+local serverDir = ServerConfig.User.ServerDir
+if serverDir:match("^%s-$") then
+  printError("Please set a directory for your server to run in by setting COPPERServer/User/ServerDir in the registry.")
+  return
+end
+
+do
+  local drive = System.Path.GetDriveAndPath(serverDir)
+  if not System.File.IsDrive(drive) then
+    printError("Server directory is not inside a valid drive.")
+    return
+  end
+
+  if not fs.exists(serverDir) then
+    fs.makeDir(serverDir)
+  end
+end
+
+logFile = fs.open(System.Path.Combine(serverDir, "logs.txt"), "w")
+
+local modemName = ServerConfig.User.ModemName
 local modem
 
 do
   local wiredLambda = function(m) return not m.isWireless() end
-  local modemName = ServerConfig.ModemName
 
   if modemName:lower() == "any" then
     modem = System.Network.GetAnyOfType("modem", wiredLambda) -- prefer wired
             or System.Network.GetAnyOfType("modem") -- fall back to wireless
+    modemName = modem.GetName()
   else
     modem = System.Network[modemName]
   end
@@ -46,6 +82,49 @@ do
   end
 end
 
-modem.open(32)
-sleep(2)
-modem.closeAll()
+local frequency = ServerConfig.User.Frequency
+local running = false
+local maxDist = ServerConfig.User.MaxAcceptedDistance
+
+local serverSocket = System.COPPER.Socket(modem, frequency)
+
+local function closeServer()
+  logFile.close()
+  running = false
+  serverSocket:Close()
+end
+
+local function processMessage(sock, msg, dist)
+  if maxDist >= 0 then
+    if dist > maxDist then
+      return -- ignore
+    end
+  end
+end
+
+local function serverLoop()
+  while running do
+    local e, p1, p2, p3, p4, p5 = os.pullEvent("socket_message", "char")
+    if e == "socket_message" then
+      local sock = System.Socket.GetFromCacheID(p1)
+      processMessage(sock, p2, sock:GetDistance())
+    elseif e == "char" then
+      if p1 == "q" then
+        return closeServer()
+      end
+    end
+  end
+end
+
+do
+  print("Starting server on frequency " .. frequency)
+  print("Name: " .. serverName)
+  print("Modem: " .. modemName)
+  print("Directory: " .. System.Path.Normalise(serverDir))
+  print("Press Q to end the server...")
+
+  running = true
+  serverLoop()
+
+  return closeServer()
+end

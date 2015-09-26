@@ -93,6 +93,7 @@ setmetatable(DirMount, {
 		local self = setmetatable({}, DirMount)
 		assert(type(realPath == "string"), "DirMount(): arg #1 must be a string")
 		self.__realPath = System.Path.Normalise(realPath)
+
 		return self
 	end
 })
@@ -205,6 +206,12 @@ function DirMount:complete(file, parent, inclFiles, inclSlashes)
 	return _fs.complete(file, parent, inclFiles, inclSlashes)
 end
 
+function DirMount:OnMount()
+	if not _fs.exists(self.__realPath) then
+		_fs.makeDir(self.__realPath)
+	end
+end
+
 local function RegisterMount(letter, mount)
 	assert(type(letter == "string"), "RegisterMount(): arg #1 must be a string")
 	letter = letter:sub(1, 1)
@@ -213,11 +220,13 @@ local function RegisterMount(letter, mount)
 
 	mount.__letter = letter
 	mounts[letter] = mount
+	mounts[letter]:OnMount()
 end
 
 local function Unmount(letter)
 	assert(type(letter == "string"), "Unmount(): arg #1 must be a string")
 	letter = letter:sub(1, 1)
+	mounts[letter]:OnUnmount()
 	mounts[letter] = nil
 end
 
@@ -225,6 +234,17 @@ local function GetMountFromDrive(letter)
 	assert(type(letter == "string"), "GetMountFromDrive(): arg #1 must be a string")
 	letter = letter:sub(1, 1)
 	return mounts[letter]
+end
+
+local theAlphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+local function GetNextFreeLetter()
+	for i=1,#theAlphabet do
+		local c = theAlphabet:sub(i, i)
+		if mounts[c] == nil then
+			return c
+		end
+	end
 end
 
 local function IsDrive(letter)
@@ -303,6 +323,7 @@ return {
 	Unmount = Unmount,
 	GetMounts = GetMounts,
 	IsDrive = IsDrive,
+	GetNextFreeLetter = GetNextFreeLetter,
 
 	GetFSAPI = GetFSAPI,
 	GetRealFSAPI = GetRealFSAPI

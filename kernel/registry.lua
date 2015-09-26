@@ -67,8 +67,15 @@ function Registry.Get(key)
   return dir
 end
 
-function Registry.ValidateKey(key, tbl)
+function Registry.ValidateKey(key, tbl, doSave)
+  if doSave == nil then doSave = true end
+
+  local changes = 0
   local dir = System.Registry.Get(key)
+  if type(dir) ~= "table" then
+    error("can't validate non-table key", 2)
+  end
+
   if dir == nil then
     dir = {}
     System.Registry.Set(key, dir)
@@ -77,8 +84,20 @@ function Registry.ValidateKey(key, tbl)
   for k,v in pairs(tbl) do
     if dir[k] == nil then
       dir[k] = v
+      changes = changes + 1
+    else
+      if type(v) == "table" then
+        local _changes = Registry.ValidateKey(key .. "/" .. k, v, false)
+        changes = changes + _changes
+      end
     end
   end
+
+  if doSave and changes > 0 then
+    Registry.Save()
+  end
+
+  return changes
 end
 
 function Registry.Delete(key)
