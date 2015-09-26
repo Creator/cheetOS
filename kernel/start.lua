@@ -19,6 +19,7 @@ local modules = {
 	{ "Sandbox", "K:/sandbox.lua" };
 	{ "Tasks", "K:/tasks.lua"};
 	{ "Library", "K:/library.lua" };
+	{ "Security", "K:/security.lua" };
 	{ "JSON", "K:/json.lua" };
 	{ "Registry", "K:/registry.lua" };
 	{ "Mounts", "K:/mounts.lua" };
