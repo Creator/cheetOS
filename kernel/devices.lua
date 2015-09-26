@@ -14,6 +14,10 @@ function Devices.Register(netName, handle)
   dev.GetName = function()
     return netName
   end
+
+  dev.IsValid = function()
+    return peripheral.isPresent(netName)
+  end
 end
 
 function Devices.Unregister(netName)

@@ -1,0 +1,10 @@
+local wiredLambda = function(m) return not m.isWireless() end
+
+local modem = System.Network.GetAnyOfType("modem", wiredLambda) -- prefer wired
+if modem == nil then
+  modem = System.Network.GetAnyOfType("modem")
+end
+
+modem.open(32)
+sleep(2)
+modem.closeAll()
