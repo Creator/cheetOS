@@ -26,13 +26,17 @@ end
 
 local function printWarning(...)
   term.setTextColour(term.isColour() and colours.yellow or colours.white)
-  logFile.writeLine(table.concat({ "Warning: ", ... }))
+  if logFile then
+    logFile.writeLine(table.concat({ "Warning: ", ... }))
+  end
   return _G.print(...)
 end
 
 local function printError(...)
   term.setTextColour(term.isColour() and colours.red or colours.white)
-  logFile.writeLine(table.concat("Error: ", { ... }))
+  if logFile then
+    logFile.writeLine(table.concat({ "Error: ", ... }))
+  end
   return _G.print(...)
 end
 
@@ -94,7 +98,7 @@ local maxDist = ServerConfig.User.MaxAcceptedDistance
 
 local running = false
 
-local serverSocket = System.COPPER.Socket(modem, frequency)
+local serverSocket = System.COPPER.Socket(serverName, serverName, modem, frequency)
 
 local function closeServer()
   logFile.close()
@@ -102,11 +106,74 @@ local function closeServer()
   serverSocket:Close()
 end
 
-local PACKET_CONNECT = 0x01
+local function denyConnection(reason)
+  local packet = System.COPPER.Packet()
+  packet:WriteNumber(System.COPPER.PACKET_ACCESS_DENIED)
+  packet:WriteString(serverName)
+  packet:WriteNumber(reason)
+  return packet
+end
+
+local function grantConnection(key)
+  local packet = System.COPPER.Packet()
+  packet:WriteNumber(System.COPPER.PACKET_ACCESS_GRANTED)
+  packet:WriteString(serverName)
+  packet:WriteString(key)
+  return packet
+end
+
+local sessions = {}
+
+local function getSessionFromKey(key)
+  for k,v in pairs(sessions) do
+    if v.Key == key then
+      return v, k
+    end
+  end
+end
 
 local packetHandlers = {
-  [PACKET_CONNECT] = function(pack)
+  [System.COPPER.PACKET_CONNECT] = function(name, pack)
+    local encrypted = pack:ReadString()
+    local hashed = ServerConfig.Internal.Password
+    local salt = ServerConfig.Internal.Salt
+    local password = System.Security.Decrypt(encrypted, hashed)
 
+    if password == nil then
+      return denyConnection(System.COPPER.DENY_REASON_INVALID_CREDENTIALS)
+    end
+
+    local incomingHashed = System.Security.Hash(password, salt)
+
+    if hashed == incomingHashed then
+      if sessions[name] ~= nil then
+        return denyConnection(System.COPPER.DENY_REASON_ALREADY_LOGGED_IN)
+      end
+
+      local key = System.Security.Hash(password .. name, System.Security.GenerateSalt(32))
+      sessions[name] = {
+        Key = key
+      }
+
+      return grantConnection(key)
+    else
+      return denyConnection(System.COPPER.DENY_REASON_INVALID_CREDENTIALS)
+    end
+  end,
+
+  [System.COPPER.PACKET_REQUEST_SALT] = function(name, pack)
+    local response = System.COPPER.Packet()
+    response:WriteNumber(System.COPPER.PACKET_SALT)
+    response:WriteString(serverName)
+    response:WriteString(ServerConfig.Internal.Salt)
+    print("Sending salt " .. ServerConfig.Internal.Salt)
+    return response
+  end,
+
+  [System.COPPER.PACKET_LOGOUT] = function(name, pack)
+    local key = pack:ReadString()
+    local session, sessionName = getSessionFromKey(key)
+    sessions[sessionName] = nil
   end
 }
 
@@ -119,10 +186,18 @@ local function processMessage(sock, msg, dist)
 
   local packet = System.COPPER.MakePacketFromData(msg)
   if packet ~= nil then -- Non-COPPER packets will be nil
+    local clientName = packet:ReadString()
     local pid = packet:ReadNumber()
+    local name = packet:ReadString()
+
+    if name ~= serverName then
+      return
+    end
+
     local handler = packetHandlers[pid]
+
     if handler then
-      local response = handler(packet)
+      local response = handler(clientName, packet)
       if response then
         serverSocket:SendPacket(response)
       end

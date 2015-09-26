@@ -9,6 +9,10 @@ local __registry = {
     Mounts = {
       U = "/user"
     }
+  },
+
+  COPPER = {
+    Name = "Computer-" .. os.getComputerID()
   }
 }
 
@@ -72,7 +76,7 @@ function Registry.ValidateKey(key, tbl, doSave)
 
   local changes = 0
   local dir = System.Registry.Get(key)
-  if type(dir) ~= "table" then
+  if dir ~= nil and type(dir) ~= "table" then
     error("can't validate non-table key", 2)
   end
 

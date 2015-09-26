@@ -1,0 +1,130 @@
+local Config = {
+  Name = "Computer-" .. os.getComputerID(),
+  ModemName = "any",
+  Frequency = 65000,
+  CommandTimeout = 10,
+
+  Session = {
+    Server = nil,
+    Key = nil,
+  }
+}
+
+System.Registry.ValidateKey("COPPER", Config)
+Config = System.Registry.Get("COPPER")
+
+local function printSuccess(...)
+  term.setTextColour(term.isColour() and colours.green or colours.white)
+  _G.print(...)
+  return term.setTextColour(colours.white)
+end
+
+local cmd = ...
+local args = { select(2, ...) }
+
+local function getModem(name)
+  if name == "any" then
+    return System.Network.GetAnyOfType("modem", function(m)
+              return not m.isWireless()
+           end) or
+           System.Network.GetAnyOfType("modem")
+  else
+    local device = System.Network[name]
+    return device.GetType() ~= "modem" and nil or device
+  end
+end
+
+local function receivePacket(sock, serverName, timeout, ...)
+  local pids = { ... }
+
+  while true do
+    local pack = sock:ReceivePacket(timeout)
+    if pack == nil then
+      -- timeout
+      break
+    end
+
+    local rpid = pack:ReadNumber()
+    local server = pack:ReadString()
+
+    if server == serverName then
+      for _,v in pairs(pids) do
+        if v == rpid then
+          return pack, rpid
+        end
+      end
+    end
+  end
+end
+
+local commands = {
+  ["login"] = function(server)
+    if not server then
+      printError("Usage: login <server name>")
+      return
+    end
+
+    local modem = getModem(Config.ModemName)
+    local sock = System.COPPER.Socket(Config.Name, server, modem, Config.Frequency)
+    sock:RequestSalt()
+
+    local pack = receivePacket(sock, server, Config.CommandTimeout,
+                                System.COPPER.PACKET_SALT)
+    local salt = pack:ReadString()
+
+    write("Enter Password: ")
+    sock:Connect(read("*"), salt)
+
+    local pid
+    pack, pid = receivePacket(sock, server, Config.CommandTimeout,
+                              System.COPPER.PACKET_ACCESS_DENIED,
+                              System.COPPER.PACKET_ACCESS_GRANTED)
+
+    if pid == System.COPPER.PACKET_ACCESS_GRANTED then
+      local key = pack:ReadString()
+      Config.Session.Server = server
+      Config.Session.Key = key
+      System.Registry.Save()
+
+      printSuccess("Access granted.")
+      print("Got key " .. key)
+    elseif pid == System.COPPER.PACKET_ACCESS_DENIED then
+      printError("Access denied. (Reason code ".. pack:ReadNumber() .. ")")
+    end
+
+    sock:Close()
+  end,
+
+  ["logout"] = function()
+    local sock = System.COPPER.Socket(Config.Name, Config.Session.Server,
+                                  getModem(Config.ModemName), Config.Frequency)
+
+    local key = Config.Session.Key
+    if key == nil then
+      printError("You are not logged in.")
+      return
+    end
+
+    sock:Disconnect(Config.Session.Key)
+    sock:Close()
+
+    Config.Session.Key = nil
+    Config.Session.Server = nil
+    System.Registry.Save()
+    printSuccess("Successfully logged out.")
+  end
+}
+
+do
+  if Config.Name:match("^%s-$") then
+    printError("Please name your computer by setting COPPER/Name in the registry.")
+    return
+  end
+
+  if not commands[cmd] then
+    printError("Type '" .. shell.getRunningProgram() .. " help' for a list of commands.")
+    return
+  end
+
+  commands[cmd](unpack(args))
+end

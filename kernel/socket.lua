@@ -40,11 +40,10 @@ setmetatable(NetSocket, {
       return
     end
 
-    device.open(self.__frequency)
-    device.open(self.__replyFreq)
-
     self.__device = device
     self.__distance = -1
+
+    self:EnsureOpen()
     return self
   end
 })
@@ -125,17 +124,16 @@ function NetSocket:Close()
 end
 
 function SocketLib.RequestNetSocket(device, freq, replyFreq)
-  if device ~= nil then
-    local socketID = makeCacheID(device, freq, replyFreq)
-    local socket = socketCache[socketID]
+  local socketID = makeCacheID(device, freq, replyFreq)
+  local socket = socketCache[socketID]
 
-    if not socket then
-      socketCache[socketID] = NetSocket(device, freq, replyFreq)
-      socket = socketCache[socketID]
-    end
-
-    return socket
+  if socket == nil then
+    socket = NetSocket(device, freq, replyFreq)
+    socketCache[socketID] = socket
+    return socketCache[socketID], socketID
   end
+
+  return socket, socketID
 end
 
 --[[function SocketLib.GetSocketCache()
